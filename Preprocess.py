@@ -157,7 +157,7 @@ class Preprocess:
             sys.stdout.flush()
 
         print "\nWriting business_list.json"
-        f = open('data/business_list.json', 'w+')
+        f = open('data/business_list_no_menu.json', 'w+')
         f.write(json.dumps(ordered_dict_list1, indent = 4))
 
         print "-"*80
