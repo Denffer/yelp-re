@@ -126,7 +126,7 @@ class MenuCrawler:
             else:
                 cnt += 1
                 ordered_dict = OrderedDict()
-                ordered_dict["business_count"] = cnt
+                ordered_dict["index"] = business["index"]
                 ordered_dict["business_name"] = business["business_name"]
                 ordered_dict["city"] = business["city"]
                 ordered_dict["stars"] = business["stars"]
