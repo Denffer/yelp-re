@@ -29,7 +29,7 @@ class MenuCrawler:
 
     def pause(self):
         """ pause the method for a few seconds """
-        time.sleep(random.randint(5,10))
+        time.sleep(random.randint(30,45))
 
     def crawl(self):
         """ crawl data from yelp official website """
