@@ -15,7 +15,7 @@ class MenuCrawler:
     """ This program aims to crawl menus from yelp official website and add to business_list.json, creating business_list_with_menu.json """
 
     def __init__(self):
-        self.scr = 'data/business_list_no_menu.json'
+        self.scr = 'data/business_list.json'
         self.dst = 'data/business_list.json'
         self.maximum = 1
 
@@ -45,47 +45,51 @@ class MenuCrawler:
             print '-'*100
             cnt += 1
 
-            print "Status:", cnt, "/", l, "| Crawling data from the restaurant:", business['business_name']
-            business['business_name'] = unicodedata.normalize('NFKD', business['business_name']).encode('ASCII', 'ignore')
-            business['city'] = unicodedata.normalize('NFKD', business['city']).encode('ASCII', 'ignore')
-            url = business['business_name'].replace(" ","-") + '-' + business['city'].replace(" ","-")
-            url = url.lower().replace("&","and").replace("\'","")
-
-            menu = []
-            #for meal in meal_time:
-            #full_url = "http://www.yelp.com/menu/" + url + "/" + meal  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/breakfast
-            full_url = "http://www.yelp.com/menu/" + url + "/"  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/
-            print "Crawling data from:", full_url
-            try:
-                connection = urllib.urlopen(full_url).getcode()
-                if connection == 503:
-                    print "Error", connection, "(IP Banned)"
-                    self.pause()
-                elif connection == 404:
-                    print "Error:", connection
-                    self.pause()
-                else:
-                    print "Successful:", connection
-                    html_data = urllib.urlopen(full_url).read()
-                    soup = BeautifulSoup(html_data, "html.parser")
-
-                    for div in soup.findAll("div", {"class": "menu-item-details"}):
-                        dish = div.find("h4").getText()
-                        dish = unicodedata.normalize('NFKD', dish).encode('ASCII', 'ignore')
-                        dish = "".join(dish.split('\n'))
-                        dish = dish.strip(" ").strip("*")
-                        menu.append(dish)
-                    self.pause()
-            except:
-                self.pause()
+            if business['menu']: 
+                print "Status:", cnt, "/", l, "| Detecting menu existed in:", business['business_name']
                 continue
+            else:
+                print "Status:", cnt, "/", l, "| Crawling data from the restaurant:", business['business_name']
+                business['business_name'] = unicodedata.normalize('NFKD', business['business_name']).encode('ASCII', 'ignore')
+                business['city'] = unicodedata.normalize('NFKD', business['city']).encode('ASCII', 'ignore')
+                url = business['business_name'].replace(" ","-") + '-' + business['city'].replace(" ","-")
+                url = url.lower().replace("&","and").replace("\'","")
 
-            menu = list(set(menu))
-            menu_list.append(sorted(menu))
+                menu = []
+                #for meal in meal_time:
+                #full_url = "http://www.yelp.com/menu/" + url + "/" + meal  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/breakfast
+                full_url = "http://www.yelp.com/menu/" + url + "/"  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/
+                print "Crawling data from:", full_url
+                try:
+                    connection = urllib.urlopen(full_url).getcode()
+                    if connection == 503:
+                        print "Error", connection, "(IP Banned)"
+                        break
+                    elif connection == 404:
+                        print "Error:", connection
+                        self.pause()
+                    else:
+                        print "Successful:", connection
+                        html_data = urllib.urlopen(full_url).read()
+                        soup = BeautifulSoup(html_data, "html.parser")
+
+                        for div in soup.findAll("div", {"class": "menu-item-details"}):
+                            dish = div.find("h4").getText()
+                            dish = unicodedata.normalize('NFKD', dish).encode('ASCII', 'ignore')
+                            dish = "".join(dish.split('\n'))
+                            dish = dish.strip(" ").strip("*")
+                            menu.append(dish)
+                        self.pause()
+                except:
+                    self.pause()
+                    continue
+
+                menu = list(set(menu))
+                menu_list.append(sorted(menu))
 
         return business_list, menu_list
 
-    def get_business_list_with_menu(self):
+    def get_business_list(self, business_list, menu_list):
         """ insert {'menu':[dish1, dish2, ...]} into business_list and render business_list_with_menu """
         business_list, menu_list = self.crawl()
         business_list_with_menu = []
