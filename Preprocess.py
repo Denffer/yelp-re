@@ -122,16 +122,6 @@ class Preprocess:
 
         return business_list
 
-    def add_review_count(self, review_list):
-        """ add review_count to every review dictionary """
-
-        cnt = 0
-        for review in review_list:
-            cnt += 1
-            review.update({"review_count": cnt})
-
-        return review_list
-
     def render(self):
         review_list, business_list = self.get_extended_review_list()
 
@@ -163,8 +153,7 @@ class Preprocess:
         print "-"*80
 
         print "Arranging dictionaries in review_list"
-        review_list = sorted( sorted(review_list, key=itemgetter('business_id')), key=itemgetter('review_stars'), reverse=True)[:2000]
-        review_list = self.add_review_count(review_list)
+        review_list = sorted( sorted(review_list, key=itemgetter('business_id')), key=itemgetter('review_stars'), reverse=True)
 
         ordered_dict_list2 = []
         length = len(review_list)
