@@ -9,9 +9,9 @@ class Preprocess:
 
     def __init__(self):
 
-        self.src_b = 'data/raw_data/yelp_academic_dataset_business2.json'
-        self.src_r = 'data/raw_data/yelp_academic_dataset_review2.json'
-        self.src_t = 'data/raw_data/yelp_academic_dataset_tip2.json'
+        self.src_b = 'data/raw_data/yelp_academic_dataset_business.json'
+        self.src_r = 'data/raw_data/yelp_academic_dataset_review.json'
+        self.src_t = 'data/raw_data/yelp_academic_dataset_tip.json'
         self.dst = 'data/'
 
     def get_business_list(self):
