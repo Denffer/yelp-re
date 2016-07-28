@@ -17,7 +17,7 @@ class MenuCrawler:
     def __init__(self):
         self.scr = 'data/menu/restaurant_1.json'
         self.dst = 'data/business_list_1.json'
-        self.maximum = 300
+        self.maximum = 1
 
     def get_business_list(self):
 
@@ -54,41 +54,50 @@ class MenuCrawler:
                 business['city'] = unicodedata.normalize('NFKD', business['city']).encode('ASCII', 'ignore')
                 url = business['business_name'].replace(" ","-") + '-' + business['city'].replace(" ","-")
                 url = url.lower().replace("&","and").replace("\'","")
+                full_url = "http://www.yelp.com/menu/" + url  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas
 
-                #for meal in meal_time:
-                #full_url = "http://www.yelp.com/menu/" + url + "/" + meal  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/breakfast
-                full_url = "http://www.yelp.com/menu/" + url + "/"  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/
-
-                print "Crawling data from:", full_url
                 try:
                     connection = urllib.urlopen(full_url).getcode()
                     if connection == 503:
                         print "Error", connection, "(IP Banned)"
                         menu.append("Error_503")
+                        menu_list.append(menu)
                         continue
                     elif connection == 404:
                         print "Error:", connection
                         menu.append("Error_404")
+                        menu_list.append(menu)
                         self.pause()
                     else:
-                        print "Successful:", connection
+                        print "Successful:", connection, "Reaching into:", full_url
                         html_data = urllib.urlopen(full_url).read()
                         soup = BeautifulSoup(html_data, "html.parser")
-                        for div in soup.findAll("div", {"class": "menu-item-details"}):
-                            dish = div.find("h4").getText()
-                            dish = unicodedata.normalize('NFKD', dish).encode('ASCII', 'ignore')
-                            dish = "".join(dish.split('\n'))
-                            dish = dish.strip(" ").strip("*")
-                            menu.append(dish)
-                        self.pause()
+
+                        print "Looking for sub_menu_items"
+                        sub_menu = []
+                        for div in soup.findAll("div", {"class": "sub-menu"}):
+                            sub_menu_item = div.find("strong").getText()
+                            sub_menu.append(sub_menu_item)
+
+                        for sub_menu_item in sub_menu:
+                            extended_url = full_url + "/" + sub_menu_item
+                            html_data = urllib.urlopen(extended_url).read()
+                            soup = BeautifulSoup(html_data, "html.parser")
+                            print "Crawling data from:", extended_url
+
+                            for div in soup.findAll("div", {"class": "menu-item-details"}):
+                                dish = div.find("h4").getText()
+                                dish = unicodedata.normalize('NFKD', dish).encode('ASCII', 'ignore')
+                                dish = "".join(dish.split('\n'))
+                                dish = dish.strip(" ").strip("*")
+                                menu.append(dish)
+
+                            menu = list(set(menu))
+                            menu_list.append(sorted(menu))
+                            self.pause()
                 except:
                     self.pause()
                     continue
-
-            #if not menu: menu = ["none"]
-
-            menu = list(set(menu))
-            menu_list.append(sorted(menu))
 
         return business_list, menu_list
 
