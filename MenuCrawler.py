@@ -17,7 +17,7 @@ class MenuCrawler:
     def __init__(self):
         self.scr = 'data/menu/restaurant_1.json'
         self.dst = 'data/business_list_1.json'
-        self.maximum = 1
+        self.maximum = 200
 
     def get_business_list(self):
 
@@ -33,9 +33,8 @@ class MenuCrawler:
 
     def crawl(self):
         """ crawl data from yelp official website """
-        business_list = self.get_business_list()[:self.maximum]
+        business_list = self.get_business_list()[self.maximum-200:self.maximum]
 
-        #meal_time = ["","breakfast", "lunch", "dinner", "brunch", "lunch-special"]
         menu_list = []
         cnt = 0
         l = len(business_list)
@@ -74,12 +73,14 @@ class MenuCrawler:
                         html_data = urllib.urlopen(full_url).read()
                         soup = BeautifulSoup(html_data, "html.parser")
 
-                        print "Looking for sub_menu_items:"
+                        print "sub_menus found:",
                         sub_menus = []
                         for li in soup.findAll("li", {"class": "sub-menu"}):
-                            sub_menu = div.getText()
+                            sub_menu = li.getText()
                             sub_menu = "".join(sub_menu.split('\n'))
-                            sub_menus.append(sub_menu)
+                            sub_menu.replace(" ", "-")
+                            sub_menus.append(sub_menu.lower())
+                        print sub_menus
 
                         for sub_menu in sub_menus:
                             extended_url = full_url + "/" + sub_menu
