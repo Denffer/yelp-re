@@ -15,9 +15,9 @@ class MenuCrawler:
     """ This program aims to crawl menus from yelp official website and add to business_list.json, creating business_list_with_menu.json """
 
     def __init__(self):
-        self.scr = 'data/business_list.json'
+        self.scr = 'data/business_list_no_menu1.json'
         self.dst = 'data/business_list.json'
-        self.maximum = 3
+        self.maximum = 5
 
     def get_business_list(self):
 
@@ -36,19 +36,17 @@ class MenuCrawler:
         business_list = self.get_business_list()[:self.maximum]
 
         #meal_time = ["","breakfast", "lunch", "dinner", "brunch", "lunch-special"]
-
         menu_list = []
         cnt = 0
         l = len(business_list)
         for business in business_list:
 
             print '-'*100
+            menu = []
             cnt += 1
-
             if 'menu' in business:
                 print "Status:", cnt, "/", l, "| Detecting menu existed in:", business['business_name']
-                #if not business['menu']
-                #    del business
+                menu = business['menu']
                 continue
             else:
                 print "Status:", cnt, "/", l, "| Crawling data from the restaurant:", business['business_name']
@@ -57,7 +55,6 @@ class MenuCrawler:
                 url = business['business_name'].replace(" ","-") + '-' + business['city'].replace(" ","-")
                 url = url.lower().replace("&","and").replace("\'","")
 
-                menu = []
                 #for meal in meal_time:
                 #full_url = "http://www.yelp.com/menu/" + url + "/" + meal  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/breakfast
                 full_url = "http://www.yelp.com/menu/" + url + "/"  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/
@@ -67,7 +64,7 @@ class MenuCrawler:
                     connection = urllib.urlopen(full_url).getcode()
                     if connection == 503:
                         print "Error", connection, "(IP Banned)"
-                        break
+                        continue
                     elif connection == 404:
                         print "Error:", connection
                         self.pause()
@@ -86,8 +83,10 @@ class MenuCrawler:
                     self.pause()
                     continue
 
-                menu = list(set(menu))
-                menu_list.append(sorted(menu))
+            #if not menu: menu = ["none"]
+
+            menu = list(set(menu))
+            menu_list.append(sorted(menu))
 
         return business_list, menu_list
 
