@@ -15,9 +15,9 @@ class MenuCrawler:
     """ This program aims to crawl menus from yelp official website and add to business_list.json, creating business_list_with_menu.json """
 
     def __init__(self):
-        self.scr = 'data/business_list_no_menu1.json'
-        self.dst = 'data/business_list.json'
-        self.maximum = 5
+        self.scr = 'data/menu/restaurant_1.json'
+        self.dst = 'data/business_list_1.json'
+        self.maximum = 300
 
     def get_business_list(self):
 
