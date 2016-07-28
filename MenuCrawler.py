@@ -17,7 +17,7 @@ class MenuCrawler:
     def __init__(self):
         self.scr = 'data/menu/restaurant_1.json'
         self.dst = 'data/business_list_1.json'
-        self.maximum = 200
+        self.maximum = 100
 
     def get_business_list(self):
 
@@ -29,11 +29,11 @@ class MenuCrawler:
 
     def pause(self):
         """ pause the method for a few seconds """
-        time.sleep(random.randint(10,20))
+        time.sleep(random.randint(20,40))
 
     def crawl(self):
         """ crawl data from yelp official website """
-        business_list = self.get_business_list()[self.maximum-200:self.maximum]
+        business_list = self.get_business_list()[:self.maximum]
 
         menu_list = []
         cnt = 0

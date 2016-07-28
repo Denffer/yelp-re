@@ -39,7 +39,7 @@ class MenuSpliter:
             cnt += 1
             small_business_list.append(business)
 
-            if cnt % 200 == 0:
+            if cnt % 100 == 0:
                 cnt2 += 1
                 f = open("./data/menu/restaurant_%s.json"%(cnt2), "w+")
                 f.write(json.dumps(small_business_list, indent=4))
