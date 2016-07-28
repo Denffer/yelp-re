@@ -64,9 +64,11 @@ class MenuCrawler:
                     connection = urllib.urlopen(full_url).getcode()
                     if connection == 503:
                         print "Error", connection, "(IP Banned)"
+                        menu.append("Error_503")
                         continue
                     elif connection == 404:
                         print "Error:", connection
+                        menu.append("Error_404")
                         self.pause()
                     else:
                         print "Successful:", connection
