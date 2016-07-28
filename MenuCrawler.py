@@ -78,7 +78,7 @@ class MenuCrawler:
                         for li in soup.findAll("li", {"class": "sub-menu"}):
                             sub_menu = li.getText()
                             sub_menu = "".join(sub_menu.split('\n'))
-                            sub_menu.replace(" ", "-")
+                            sub_menu = sub_menu.replace(" ", "-")
                             sub_menus.append(sub_menu.lower())
                         print sub_menus
 
