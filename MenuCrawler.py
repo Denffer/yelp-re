@@ -73,8 +73,8 @@ class MenuCrawler:
                         html_data = urllib.urlopen(full_url).read()
                         soup = BeautifulSoup(html_data, "html.parser")
 
-                        print "sub_menus found:",
-                        sub_menus = []
+                        print "sub_menus:",
+                        sub_menus = [""]
                         for li in soup.findAll("li", {"class": "sub-menu"}):
                             sub_menu = li.getText()
                             sub_menu = "".join(sub_menu.split('\n'))
