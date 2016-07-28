@@ -49,13 +49,14 @@ class MenuCrawler:
                 menu = business['menu']
                 continue
             else:
-                print "Status:", cnt, "/", l, "| Crawling data from the restaurant:", business['business_name']
+                print "Status:", cnt, "/", l, "| Restaurant:", business['business_name']
                 business['business_name'] = unicodedata.normalize('NFKD', business['business_name']).encode('ASCII', 'ignore')
                 business['city'] = unicodedata.normalize('NFKD', business['city']).encode('ASCII', 'ignore')
                 url = business['business_name'].replace(" ","-") + '-' + business['city'].replace(" ","-")
                 url = url.lower().replace("&","and").replace("\'","")
                 full_url = "http://www.yelp.com/menu/" + url  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas
 
+                print "Reaching into:", full_url
                 try:
                     connection = urllib.urlopen(full_url).getcode()
                     if connection == 503:
@@ -69,21 +70,22 @@ class MenuCrawler:
                         menu_list.append(menu)
                         self.pause()
                     else:
-                        print "Successful:", connection, "Reaching into:", full_url
+                        print "Successful:", connection
                         html_data = urllib.urlopen(full_url).read()
                         soup = BeautifulSoup(html_data, "html.parser")
 
-                        print "Looking for sub_menu_items"
-                        sub_menu = []
-                        for div in soup.findAll("div", {"class": "sub-menu"}):
-                            sub_menu_item = div.find("strong").getText()
-                            sub_menu.append(sub_menu_item)
+                        print "Looking for sub_menu_items:"
+                        sub_menus = []
+                        for li in soup.findAll("li", {"class": "sub-menu"}):
+                            sub_menu = div.getText()
+                            sub_menu = "".join(sub_menu.split('\n'))
+                            sub_menus.append(sub_menu)
 
-                        for sub_menu_item in sub_menu:
-                            extended_url = full_url + "/" + sub_menu_item
+                        for sub_menu in sub_menus:
+                            extended_url = full_url + "/" + sub_menu
+                            print "Crawling data from:", extended_url
                             html_data = urllib.urlopen(extended_url).read()
                             soup = BeautifulSoup(html_data, "html.parser")
-                            print "Crawling data from:", extended_url
 
                             for div in soup.findAll("div", {"class": "menu-item-details"}):
                                 dish = div.find("h4").getText()
@@ -92,9 +94,10 @@ class MenuCrawler:
                                 dish = dish.strip(" ").strip("*")
                                 menu.append(dish)
 
-                            menu = list(set(menu))
-                            menu_list.append(sorted(menu))
                             self.pause()
+
+                        menu = list(set(menu))
+                        menu_list.append(sorted(menu))
                 except:
                     self.pause()
                     continue
