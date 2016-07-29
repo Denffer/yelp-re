@@ -15,9 +15,9 @@ class MenuCrawler:
     """ This program aims to crawl menus from yelp official website and add to business_list.json, creating business_list_with_menu.json """
 
     def __init__(self):
-        self.scr = 'data/business_list.json'
-        self.dst = 'data/business_list.json'
-        self.maximum = 1
+        self.scr = 'data/menu/restaurant_1.json'
+        self.dst = 'data/business_list_1.json'
+        self.maximum = 100
 
     def get_business_list(self):
 
@@ -29,13 +29,11 @@ class MenuCrawler:
 
     def pause(self):
         """ pause the method for a few seconds """
-        time.sleep(random.randint(30,45))
+        time.sleep(random.randint(20,40))
 
     def crawl(self):
         """ crawl data from yelp official website """
         business_list = self.get_business_list()[:self.maximum]
-
-        #meal_time = ["","breakfast", "lunch", "dinner", "brunch", "lunch-special"]
 
         menu_list = []
         cnt = 0
@@ -43,53 +41,71 @@ class MenuCrawler:
         for business in business_list:
 
             print '-'*100
+            menu = []
             cnt += 1
-
-            if business['menu']: 
+            if 'menu' in business:
                 print "Status:", cnt, "/", l, "| Detecting menu existed in:", business['business_name']
+                menu = business['menu']
                 continue
             else:
-                print "Status:", cnt, "/", l, "| Crawling data from the restaurant:", business['business_name']
+                print "Status:", cnt, "/", l, "| Restaurant:", business['business_name']
                 business['business_name'] = unicodedata.normalize('NFKD', business['business_name']).encode('ASCII', 'ignore')
                 business['city'] = unicodedata.normalize('NFKD', business['city']).encode('ASCII', 'ignore')
                 url = business['business_name'].replace(" ","-") + '-' + business['city'].replace(" ","-")
                 url = url.lower().replace("&","and").replace("\'","")
+                full_url = "http://www.yelp.com/menu/" + url  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas
 
-                menu = []
-                #for meal in meal_time:
-                #full_url = "http://www.yelp.com/menu/" + url + "/" + meal  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/breakfast
-                full_url = "http://www.yelp.com/menu/" + url + "/"  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas/
-                print "Crawling data from:", full_url
+                print "Reaching into:", full_url
                 try:
                     connection = urllib.urlopen(full_url).getcode()
                     if connection == 503:
                         print "Error", connection, "(IP Banned)"
-                        break
+                        menu.append("Error_503")
+                        menu_list.append(menu)
+                        continue
                     elif connection == 404:
                         print "Error:", connection
+                        menu.append("Error_404")
+                        menu_list.append(menu)
                         self.pause()
                     else:
                         print "Successful:", connection
                         html_data = urllib.urlopen(full_url).read()
                         soup = BeautifulSoup(html_data, "html.parser")
 
-                        for div in soup.findAll("div", {"class": "menu-item-details"}):
-                            dish = div.find("h4").getText()
-                            dish = unicodedata.normalize('NFKD', dish).encode('ASCII', 'ignore')
-                            dish = "".join(dish.split('\n'))
-                            dish = dish.strip(" ").strip("*")
-                            menu.append(dish)
-                        self.pause()
+                        print "sub_menus:",
+                        sub_menus = [""]
+                        for li in soup.findAll("li", {"class": "sub-menu"}):
+                            sub_menu = li.getText()
+                            sub_menu = "".join(sub_menu.split('\n'))
+                            sub_menu = sub_menu.replace(" ", "-")
+                            sub_menus.append(sub_menu.lower())
+                        print sub_menus
+
+                        for sub_menu in sub_menus:
+                            extended_url = full_url + "/" + sub_menu
+                            print "Crawling data from:", extended_url
+                            html_data = urllib.urlopen(extended_url).read()
+                            soup = BeautifulSoup(html_data, "html.parser")
+
+                            for div in soup.findAll("div", {"class": "menu-item-details"}):
+                                dish = div.find("h4").getText()
+                                dish = unicodedata.normalize('NFKD', dish).encode('ASCII', 'ignore')
+                                dish = "".join(dish.split('\n'))
+                                dish = dish.strip(" ").strip("*")
+                                menu.append(dish)
+
+                            self.pause()
+
+                        menu = list(set(menu))
+                        menu_list.append(sorted(menu))
                 except:
                     self.pause()
                     continue
 
-                menu = list(set(menu))
-                menu_list.append(sorted(menu))
-
         return business_list, menu_list
 
-    def get_business_list(self, business_list, menu_list):
+    def get_business_list_with_menu(self):
         """ insert {'menu':[dish1, dish2, ...]} into business_list and render business_list_with_menu """
         business_list, menu_list = self.crawl()
         business_list_with_menu = []
@@ -144,7 +160,7 @@ class MenuCrawler:
             sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
             sys.stdout.flush()
 
-        f = open('data/business_list_with_menu.json', 'w+')
+        f = open(self.dst, 'w+')
         f.write( json.dumps( ordered_dict_list, indent = 4, cls=NoIndentEncoder))
 
         print "\n" + "-"*100
