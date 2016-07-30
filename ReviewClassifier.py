@@ -41,11 +41,13 @@ class ReviewClassifier:
         business_list = self.get_business_list()
 
         cnt = 0
+        length = len(business_list)
         for business in business_list:
             f = open("data/reviews/restaurant_%s.json"%(cnt+1), "w+")
 
             cnt += 1
             text_list = []
+            print "Looking for review that match", business["business_name"], "business_id:",  business["business_id"]
             for review in review_list:
                 if business["business_id"] == review["business_id"]:
                    text_list.append(review["text"])
@@ -58,6 +60,9 @@ class ReviewClassifier:
 
             f.write(json.dumps(ordered_dict, indent=4))
             f.close()
+
+            sys.stdout.write("\rStatus: %s / %s"%(cnt, length)
+            sys.stdout.flush()
 
 if __name__ == '__main__':
     classifier = ReviewClassifier()
