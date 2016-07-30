@@ -64,6 +64,8 @@ class ReviewClassifier:
             sys.stdout.write("\rStatus: %s / %s"%(cnt, length)
             sys.stdout.flush()
 
+            print "Done"
+
 if __name__ == '__main__':
     classifier = ReviewClassifier()
     classifier.classify()
