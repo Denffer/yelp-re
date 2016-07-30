@@ -29,7 +29,7 @@ class ReviewClassifier:
 
     def create_folder(self):
         """ create directroy if not found """
-        directory = os.path.dirname("./reviews/")
+        directory = os.path.dirname("./data/reviews/")
         if not os.path.exists(directory):   # if the directory does not exist
             os.makedirs(directory)          # create the directory
 
@@ -42,7 +42,7 @@ class ReviewClassifier:
 
         cnt = 0
         for business in business_list:
-            f = open("./reviews/restaurant_%s.json"%(cnt+1), "w+")
+            f = open("data/reviews/restaurant_%s.json"%(cnt+1), "w+")
 
             cnt += 1
             text_list = []
