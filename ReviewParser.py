@@ -78,7 +78,7 @@ class ReviewParser:
 
         for i in xrange(len(dishes_ar)):
                 dishes_ar[i] = dishes_ar[i].decode().encode("utf-8")
-                dishes_ar[i] = dishes_ar[i].lower().replace("&","and").replace(" ","-") + "_" + restaurant_name.lower().replace(" ","-")
+                dishes_ar[i] = dishes_ar[i].lower().replace("&","and").replace(" ","-") + "_" + restaurant_name.lower().replace(" ","-").replace("\'"," ")
         print dishes_ar
         return dishes_ar
 
@@ -98,9 +98,9 @@ class ReviewParser:
         marked_dishes = self.get_marked_dishes()
 
         for i in xrange(len(frontend_reviews)):
-            frontend_reviews[i] = frontend_reviews[i].encode("utf-8").lower()
+            frontend_reviews[i] = frontend_reviews[i].lower()
             """ Replacing | E.g. I love country pate. -> I love <mark>housemade country pate</mark>. """
-            for j in dishes_regex:
+            for j in xrange(len(dishes_regex)):
                 frontend_reviews[i] = re.sub(dishes_regex[j], marked_dishes[j], frontend_reviews[i], flags = re.IGNORECASE)
 
         return frontend_reviews
@@ -131,11 +131,11 @@ class ReviewParser:
         dishes_ar = self.get_dishes_ar()
 
         count_list = []
-        cnt = 0
+        count = 0
         for dish in dishes_ar:
             for review in backend_review_list:
-                count_list[cnt] += review.count(" "+ dish +" ")
-            cnt += 1
+                count += review.count(" "+ dish +" ")
+                count_list.append(count)
 
         menu = []
         index = 0

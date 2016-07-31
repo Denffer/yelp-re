@@ -61,7 +61,7 @@ class ReviewClassifier:
             f.write(json.dumps(ordered_dict, indent=4))
             f.close()
 
-            sys.stdout.write("\rStatus: %s / %s"%(cnt, length)
+            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
             sys.stdout.flush()
 
             print "Done"
