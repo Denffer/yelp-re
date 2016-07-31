@@ -1,6 +1,7 @@
 import json
 import os
 from collections import OrderedDict
+import sys
 
 class ReviewClassifier:
     """ This program aims to (1) filter out redundant reviews (2) classify the reviews of the matched restaurants """
@@ -47,7 +48,7 @@ class ReviewClassifier:
 
             cnt += 1
             text_list = []
-            print "Looking for review that match", business["business_name"], "business_id:",  business["business_id"]
+            print "Status:", cnt, " / ", length, " | Sorting reviews in that match business_id:", business["business_id"], "into",  business["business_name"]
             for review in review_list:
                 if business["business_id"] == review["business_id"]:
                    text_list.append(review["text"])
@@ -61,10 +62,7 @@ class ReviewClassifier:
             f.write(json.dumps(ordered_dict, indent=4))
             f.close()
 
-            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
-            sys.stdout.flush()
-
-            print "Done"
+        print "Done"
 
 if __name__ == '__main__':
     classifier = ReviewClassifier()
