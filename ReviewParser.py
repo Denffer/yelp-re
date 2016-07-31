@@ -183,19 +183,19 @@ class ReviewParser:
         orderedDict1["review_count"] = business["review_count"]
         orderedDict1["reviews"] = frontend_reviews
 
-        frontend_json = open("./frontend_reviews/restaurant_%s.json"%(filename), "w+")
+        frontend_json = open("data/frontend_reviews/restaurant_%s.json"%(filename), "w+")
         frontend_json.write(json.dumps(orderedDict1, indent = 4))
         frontend_json.close()
 
-        print sys.argv[1], "'s frontend json is completed and saved in ./frontend_reviews"
+        print sys.argv[1], "'s frontend json is completed and saved in data/frontend_reviews"
 
         """ (2) render restaurant_*.json in ./backend_reviews """
-        backend_txt = open("./backend_reviews/restaurant_%s.txt"%(filename), "w+")
-        for review in backend_review_list:
-            backend_txt.write(review + '\n')
+        backend_txt = open("data/backend_reviews/restaurant_%s.txt"%(filename), "w+")
+        for review in backend_reviews:
+            backend_txt.write(review.encode("utf-8") + '\n')
         backend_txt.close()
 
-        print sys.argv[1], "'s backend json is completed and saved in ./backend_reviews"
+        print sys.argv[1], "'s backend json is completed and saved in data/backend_reviews"
 
         """ (3) render restaurant_dict, in which menu is transformded from a list to a dictionary """
 
@@ -209,11 +209,11 @@ class ReviewParser:
 
         #dish_list = sorted(dish_list, key=lambda k: k['count'])
 
-        restaurant_json = open("./restaurant_dict_list/restaurant_dict_%s.json"%(filename), "w+")
-        restaurant_json.write(json.dumps( restaurant_dic, indent = 4, cls=NoIndentEncoder))
+        restaurant_json = open("data/restaurant_dict_list/restaurant_dict_%s.json"%(filename), "w+")
+        restaurant_json.write(json.dumps( orderedDict2, indent = 4, cls=NoIndentEncoder))
         restaurant_json.close()
 
-        print sys.argv[1], "'s restaurant_dic json is completed and saved in ./restuarnat_dict_list"
+        print sys.argv[1], "'s restaurant_dic json is completed and saved in data/restuarnat_dict_list"
 
 class NoIndent(object):
     def __init__(self, value):

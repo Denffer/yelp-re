@@ -48,7 +48,7 @@ class ReviewClassifier:
 
             cnt += 1
             text_list = []
-            print "Status:", cnt, " / ", length, " | Sorting reviews in that match business_id:", business["business_id"], "into",  business["business_name"]
+            print "Status:", cnt, "/", length, " | Sorting reviews in that match business_id:", business["business_id"], "into:",  business["business_name"]
             for review in review_list:
                 if business["business_id"] == review["business_id"]:
                    text_list.append(review["text"])
