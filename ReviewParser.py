@@ -149,9 +149,9 @@ class ReviewParser:
 
     def create_dirs(self):
         """ create the directory if not exist"""
-        dir1 = os.path.dirname("./backend_reviews/")
-        dir2 = os.path.dirname("./frontend_reviews/")
-        dir3 = os.path.dirname("./restaurant_dict_list/")
+        dir1 = os.path.dirname("data/backend_reviews/")
+        dir2 = os.path.dirname("data/frontend_reviews/")
+        dir3 = os.path.dirname("data/restaurant_dict_list/")
 
         if not os.path.exists(dir1):
             os.makedirs(dir1)
