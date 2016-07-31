@@ -190,14 +190,8 @@ class ReviewParser:
         print sys.argv[1], "'s frontend json is completed and saved in data/frontend_reviews"
 
         """ (2) render restaurant_*.json in ./backend_reviews """
-<<<<<<< HEAD
-        backend_txt = open("./backend_reviews/restaurant_%s.txt"%(filename), "w+")
-        for review in backend_reviews:
-            #review = review.encode("utf-8")
-=======
         backend_txt = open("data/backend_reviews/restaurant_%s.txt"%(filename), "w+")
         for review in backend_reviews:
->>>>>>> 1b01547f3a0756e9ada957297856972ded5fd164
             backend_txt.write(review.encode("utf-8") + '\n')
         backend_txt.close()
 
@@ -215,11 +209,7 @@ class ReviewParser:
 
         #dish_list = sorted(dish_list, key=lambda k: k['count'])
 
-<<<<<<< HEAD
-        restaurant_json = open("./restaurant_dict_list/restaurant_dict_%s.json"%(filename), "w+")
-=======
         restaurant_json = open("data/restaurant_dict_list/restaurant_dict_%s.json"%(filename), "w+")
->>>>>>> 1b01547f3a0756e9ada957297856972ded5fd164
         restaurant_json.write(json.dumps( orderedDict2, indent = 4, cls=NoIndentEncoder))
         restaurant_json.close()
 
