@@ -52,7 +52,7 @@ class MenuCrawler:
                 business['business_name'] = unicodedata.normalize('NFKD', business['business_name']).encode('ASCII', 'ignore')
                 business['city'] = unicodedata.normalize('NFKD', business['city']).encode('ASCII', 'ignore')
                 url = business['business_name'].replace(" ","-") + '-' + business['city'].replace(" ","-")
-                url = url.lower().replace("&","and").replace("\'","")
+                url = url.lower().replace("&","and").replace("\'","").replace(".","")
                 full_url = "http://www.yelp.com/menu/" + url  # E.g. http://www.yelp.com/menu/mon-ami-gabi-las-vegas
 
                 print "Reaching into:", full_url
@@ -78,7 +78,8 @@ class MenuCrawler:
                         for li in soup.findAll("li", {"class": "sub-menu"}):
                             sub_menu = li.getText()
                             sub_menu = "".join(sub_menu.split('\n'))
-                            sub_menu = sub_menu.replace(" ", "-")
+                            sub_menu = unicodedata.normalize('NFKD', sub_menu).encode('ASCII', 'ignore')
+                            sub_menu = sub_menu.replace(" ", "-").replace(".","")
                             sub_menus.append(sub_menu.lower())
                         print sub_menus
 
