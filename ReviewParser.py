@@ -52,7 +52,7 @@ class ReviewParser:
         dishes_regex = self.get_business()["menu"]
 
         for i in xrange(len(dishes_regex)):
-            dishes_regex[i] = dishes_regex[i].replace("-","\-").encode('utf-8').lower()
+            dishes_regex[i] = dishes_regex[i].replace(" ","").replace(".","").replace("-","\-").encode('utf-8').lower()
             dishes_regex[i] = re.sub("\&|\.|\(.*\)|[0-9]|([0-9]*-[0-9])+|oz","",dishes_regex[i])
 
             dishes_regex[i] = dishes_regex[i].split()
