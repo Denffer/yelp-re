@@ -78,7 +78,7 @@ class ReviewParser:
 
         for i in xrange(len(dishes_ar)):
                 dishes_ar[i] = dishes_ar[i].decode().encode("utf-8")
-                dishes_ar[i] = dishes_ar[i].lower().replace("&","and").replace(" ","-") + "_" + restaurant_name.lower().replace(" ","-").replace("\'"," ").replace(".","")
+                dishes_ar[i] = dishes_ar[i].lower().replace("&","and").replace(" ","-") + "_" + restaurant_name.lower().replace(" ","-").replace("\'","").replace(".","")
         print dishes_ar
         return dishes_ar
 
