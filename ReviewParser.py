@@ -115,7 +115,7 @@ class ReviewParser:
         """ Clean review_list before replacement """
         for i in xrange(len(backend_reviews)):
             backend_reviews[i] = backend_reviews[i].lower()
-            backend_reviews[i] = re.sub("( ! | @ | # | \$ | % | \^ | \& | \* | \( | \) | \: | \; | \. | \, | \? | \")", r' \1 ', backend_reviews[i])
+            backend_reviews[i] = re.sub(" ! | @ | # | \$ | % | \^ | \& | \* | \( | \) | \: | \; | \. | \, | \? | \" ", r' \1 ', backend_reviews[i])
             backend_reviews[i] = re.sub("\\n", r" ", backend_reviews[i])
             """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
             for j in xrange(len(dishes_regex)):
