@@ -2,7 +2,7 @@
 
 for i in data/reviews/*.json
 do 
-    ts -n -f sh -c "python ReviewParser.py $f" &
+    ts -n -f sh -c "python ReviewParser.py $i" &
 done
-ts -S 20
+ts -S 5
 
