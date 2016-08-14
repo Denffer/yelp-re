@@ -1,20 +1,13 @@
 # -*- coding: utf-8 -*-
-import sys
-import copy
-import re
-import json
-import os
-import operator
-import uuid
-from collections import OrderedDict
+import sys, re, json, os, uuid, itertools
 from operator import itemgetter
-
-from bs4 import BeautifulSoup
+from collections import OrderedDict
+import SpellingChecker #self defined
 
 class ReviewParser:
     """ This program aims to transform restaurant_*.json into
         (1) restaurant_*.txt in 'data/backend_reviews'
-        (X) (2) restaurant_dict_*.json in 'data/restaurant_dic_list'
+        (2) restaurant_dict_*.json in 'data/restaurant_dic_list'
         (3) restaurant_1.json in 'data/frontend_reviews'
         (4) count sentiment words in the reviews
     """
@@ -41,13 +34,15 @@ class ReviewParser:
                 matched_business = business
         return matched_business
 
-    def get_sentiment_list(self):
+    def get_lexicon(self):
         """ return p_list containing dictionaries of positive words """
 
         positive_list = []
-        with open('data/lexicon/positive-words.txt') as f:
-            for word in f:
-                positive_list.append(word.strip())
+        with open('data/lexicon/lexicon.json') as f:
+            lexicon = json.load(f)
+            for word_dict in lexicon:
+                positive_list.append(word_dict["word"])
+
         return positive_list
 
     def get_dishes_regex(self):
@@ -80,9 +75,10 @@ class ReviewParser:
         restaurant_name = self.get_business()['business_name']
 
         for i in xrange(len(dishes_ar)):
-                dishes_ar[i] = dishes_ar[i].decode().encode("utf-8")
-                dishes_ar[i] = dishes_ar[i].lower().replace("&","and").replace(" ","-") + "_" + restaurant_name.lower().replace(" ","-").replace("\'","").replace(".","")
-        #print dishes_ar
+            dishes_ar[i] = re.sub("\(.*\)", r'', dishes_ar[i])
+            dishes_ar[i] = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dishes_ar[i])
+            dishes_ar[i] = dishes_ar[i] + "_" + restaurant_name
+            dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace(" ", "-").replace("\'", "").replace(".", "")
         return dishes_ar
 
     def get_marked_dishes(self):
@@ -90,6 +86,8 @@ class ReviewParser:
         dishes = self.get_business()["menu"]
         marked_dishes = []
         for dish in dishes:
+            dish = re.sub("\(.*\)", r'', dish)
+            dish = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dish)
             dish = dish.lower().replace("&","and").replace("'","").replace(" ","-")
             marked_dishes.append("<mark>" + dish + "</mark>")
         #print marked_dishes
@@ -111,19 +109,45 @@ class ReviewParser:
 
         return frontend_reviews
 
+    def get_cleaned_reviews(self):
+        """ clean reviews """
+        raw_reviews = self.get_review_dict()["reviews"]
+
+        clean_reviews = []
+        for text in raw_reviews:
+            #text = text.decode("utf-8").encode('ascii', 'ignore')
+
+            text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
+            text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
+            text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
+            text = re.sub("(\\n)+", r" ", text)
+            text = re.sub("(\s)+", r" ", text)
+
+            text = text.lower()
+
+            text = re.sub(r"'m", " am", text)
+            text = re.sub(r"'re", " are", text)
+            text = re.sub(r"'s", " is", text)
+            text = re.sub(r"'ve", " have", text)
+            text = re.sub(r"'d", " would", text)
+            text = re.sub(r"n't", " not", text)
+            text = re.sub(r"'ll", " will", text)
+
+            text = ''.join(''.join(s)[:2] for _, s in itertools.groupby(text)) # sooo happppppy -> so happy
+            #text = ' '.join(SpellingChecker.correction(word) for word in text.split())
+
+            clean_reviews.append(text)
+
+        return clean_reviews
+
     def get_backend_reviews(self):
         """ match the dishes in the reviews with dishes_regex and replace them with the dishes in dishes_ar  """
 
-        backend_reviews = self.get_review_dict()["reviews"]
+        backend_reviews = self.get_cleaned_reviews()
         dishes_regex = self.get_dishes_regex()
         dishes_ar = self.get_dishes_ar()
 
-        """ Clean review_list before replacement """
         for i in xrange(len(backend_reviews)):
-            backend_reviews[i] = backend_reviews[i].lower()
-            backend_reviews[i] = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', backend_reviews[i])
-            backend_reviews[i] = re.sub("(\\n)+", r" ", backend_reviews[i])
-            backend_reviews[i] = re.sub("(\s)+", r" ", backend_reviews[i])
             """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
             for j in xrange(len(dishes_regex)):
                 backend_reviews[i] = re.sub(dishes_regex[j], dishes_ar[j], backend_reviews[i], flags = re.IGNORECASE)
@@ -176,14 +200,17 @@ class ReviewParser:
     def get_statistics(self):
         """ count the sentiment word in reviews """
         backend_reviews = self.get_backend_reviews()
-        positive_list = self.get_sentiment_list()
+        positive_list = self.get_lexicon()
 
         statistics = []
+        index_cnt = 0
         for word in positive_list:
+            index_cnt += 1
             count = 0
             for review in backend_reviews:
                 count += review.count(" " + word + " ")
             orderedDict = OrderedDict()
+            orderedDict["index"] = index_cnt
             orderedDict["word"] = word
             orderedDict["count"] = count
             statistics.append(NoIndent(orderedDict))
@@ -235,7 +262,7 @@ class ReviewParser:
         frontend_json.write(json.dumps(orderedDict1, indent = 4))
         frontend_json.close()
 
-        print sys.argv[1], "'s frontend json is completed and saved in data/frontend_reviews"
+        print sys.argv[1], "'s frontend json is completed"
 
         """ (2) render restaurant_*.json in ./backend_reviews """
         backend_txt = open("data/backend_reviews/restaurant_%s.txt"%(filename), "w+")
@@ -243,27 +270,9 @@ class ReviewParser:
             backend_txt.write(review.encode("utf-8") + '\n')
         backend_txt.close()
 
-        print sys.argv[1], "'s backend json is completed and saved in data/backend_reviews"
+        print sys.argv[1], "'s backend json is completed"
 
-        """ (3) render restaurant_dict, in which menu is transformded from a list to a dictionary """
-
-        orderedDict2 = OrderedDict()
-        orderedDict2["restaurant_name"] = restaurant_dict["business_name"]
-        orderedDict2["restaurant_id"] = restaurant_dict["business_id"]
-        orderedDict2["stars"] = restaurant_dict["stars"]
-        orderedDict2["review_count"] = review_count
-        orderedDict2["menu_length"] = restaurant_dict["menu_length"]
-        orderedDict2["menu"] = restaurant_dict["menu"]
-
-        #dish_list = sorted(dish_list, key=lambda k: k['count'])
-
-        restaurant_json = open("data/restaurant_dict_list/restaurant_dict_%s.json"%(filename), "w+")
-        restaurant_json.write(json.dumps( orderedDict2, indent = 4, cls=NoIndentEncoder))
-        restaurant_json.close()
-
-        print sys.argv[1], "'s restaurant_dic json is completed and saved in data/restuarnat_dict_list"
-
-        """ (3) render restaurant_dict, in which menu is transformded from a list to a dictionary """
+        """ (3) render restaurant_dict, in which menu is transformded from a list to a detailed dictionary """
 
         orderedDict2 = OrderedDict()
         orderedDict2["restaurant_name"] = restaurant_dict["business_name"]
@@ -279,13 +288,15 @@ class ReviewParser:
         restaurant_json.write(json.dumps( orderedDict2, indent = 4, cls=NoIndentEncoder))
         restaurant_json.close()
 
-        print sys.argv[1], "'s restaurant_dic json is completed and saved in data/restuarnat_dict_list"
+        print sys.argv[1], "'s restaurant_dic json is completed"
+
+        """ (4) render restaurant.json containing dictionaries of each positive sentiment word """
 
         restaurant_json = open("data/sentiment_statistics/restaurant_%s.json"%(filename), "w+")
         restaurant_json.write(json.dumps(sentiment_statistics, indent = 4, cls=NoIndentEncoder))
         restaurant_json.close()
 
-        print sys.argv[1], "'s sentiment analysis is completed and saved in data/sentiment_statistics/"
+        print sys.argv[1], "'s sentiment analysis is completed"
 
 class NoIndent(object):
     def __init__(self, value):

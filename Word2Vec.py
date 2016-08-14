@@ -8,7 +8,7 @@ class Word2Vec:
     """ This program aims to (1) filter out redundant reviews (2) classify the reviews of the matched restaurants """
 
     def __init__(self):
-        self.src_b = "./data/backend_reviews/"
+        self.src_b = "./data/review_test/"
 
     def get_source(self):
         """ get every review in backend_reviews """
@@ -26,19 +26,6 @@ class Word2Vec:
 
         return source
 
-    def get_cleaned_source(self):
-        source = self.get_source()
-
-        appostophes = {"'m":" am", "'re":" are", "'s":" is", "'ve": " have"}
-        print "Cleaning data ..."
-        for text in source:
-            text = text.decode("utf-8").encode('ascii', 'ignore')
-            text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
-            text = ' '.join([appostophes[word] if word in appostophes else word for word in text.split()])
-            #FIXME #text = _slang_loopup(text) # luv -> love
-            text = ''.join(''.join(s)[:2] for _, s in itertools.groupby(text)) # sooo happppppy -> so happy
-            print text
-
     def get_words(self):
         """ transform source into a list of words """
         source = self.get_source()
@@ -55,7 +42,30 @@ class Word2Vec:
 
         return words
 
+	abulary_size = 50000
+
+    def build_dataset(words):
+        count = [['UNK', -1]]
+        count.extend(collections.Counter(words).most_common(vocabulary_size - 1))
+        dictionary = dict()
+        for word, _ in count:
+            dictionary[word] = len(dictionary)
+            data = list()
+            unk_count = 0
+            for word in words:
+                if word in dictionary:
+                    index = dictionary[word]
+                else:
+                    index = 0  # dictionary['UNK']
+                    unk_count += 1
+                data.append(index)
+            count[0][1] = unk_count
+            reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
+        return data, count, dictionary, reverse_dictionary
+
+	#del words  # Hint to reduce memory.
+
 if __name__ == '__main__':
     w2v = Word2Vec()
-    w2v.get_cleaned_source()
-
+    w2v.get_words()
+    data, count, dictionary, reverse_dictionary = build_dataset(words)
