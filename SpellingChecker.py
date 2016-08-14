@@ -3,7 +3,7 @@ from collections import Counter
 
 def words(text): return re.findall(r'\w+', text.lower())
 
-WORDS = Counter(words(open('data/big.txt').read()))
+WORDS = Counter(words(open('data/correction_corpus.txt').read()))
 
 def edits1(word):
     "All edits that are one edit away from `word`."
