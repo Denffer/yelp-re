@@ -118,7 +118,7 @@ class ReviewParser:
             #text = text.decode("utf-8").encode('ascii', 'ignore')
 
             text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
-            text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
+            #text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
             text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
             text = re.sub("(\\n)+", r" ", text)
             text = re.sub("(\s)+", r" ", text)
