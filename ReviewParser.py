@@ -19,6 +19,7 @@ class ReviewParser:
 
         self.backend_reviews = []
         self.frontend_reviews = []
+        self.switch = 1
 
     def get_review_dict(self):
         #print "Loading data from", self.src
@@ -82,6 +83,7 @@ class ReviewParser:
             dishes_ar[i] = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dishes_ar[i])
             dishes_ar[i] = dishes_ar[i] + "_" + restaurant_name
             dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace(" ", "-").replace("\'", "").replace(".", "")
+
         return dishes_ar
 
     def get_marked_dishes(self):
@@ -89,8 +91,10 @@ class ReviewParser:
         dishes = self.get_business()["menu"]
         marked_dishes = []
 
-        print "\n" + "-"*70
-        print "Marking dishes"
+        if self.switch:
+            print "\n" + "-"*70
+            print "Marking dishes"
+
         cnt = 0
         length = len(dishes)
         for dish in dishes:
@@ -100,8 +104,9 @@ class ReviewParser:
             dish = dish.lower().replace("&","and").replace("'","").replace(" ","-")
             marked_dishes.append("<mark>" + dish + "</mark>")
 
-            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
-            sys.stdout.flush()
+            if self.switch:
+                sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                sys.stdout.flush()
         #print marked_dishes
         return marked_dishes
 
@@ -111,8 +116,9 @@ class ReviewParser:
         dishes_regex = self.get_dishes_regex()
         marked_dishes = self.get_marked_dishes()
 
-        print "\n" + "-"*70
-        print "Processing frontend reviews"
+        if self.switch:
+            print "\n" + "-"*70
+            print "Processing frontend reviews"
 
         length1 = len(frontend_reviews)
         for i in xrange(len(frontend_reviews)):
@@ -123,8 +129,9 @@ class ReviewParser:
                 """ Replacing | E.g. I love country pate. -> I love <mark>housemade country pate</mark>. """
                 frontend_reviews[i] = re.sub(dishes_regex[j], marked_dishes[j], frontend_reviews[i], flags = re.IGNORECASE)
 
-                sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
-                sys.stdout.flush()
+                if self.switch:
+                    sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
+                    sys.stdout.flush()
 
             frontend_reviews[i] = frontend_reviews[i].replace("-"," ")
 
@@ -134,7 +141,9 @@ class ReviewParser:
         """ clean reviews """
         raw_reviews = self.get_review_dict()["reviews"]
 
-        print "Cleaning reviews"
+        if self.switch:
+            print "Cleaning reviews"
+
         cnt = 0
         length = len(raw_reviews)
         clean_reviews = []
@@ -162,8 +171,9 @@ class ReviewParser:
             #text = ' '.join(SpellingChecker.correction(word) for word in text.split())
             clean_reviews.append(text)
 
-            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
-            sys.stdout.flush()
+            if self.switch:
+                sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                sys.stdout.flush()
 
         return clean_reviews
 
@@ -174,8 +184,9 @@ class ReviewParser:
         dishes_regex = self.get_dishes_regex()
         dishes_ar = self.get_dishes_ar()
 
-        print "\n" + "-"*70
-        print "Processing backend_reviews"
+        if self.switch:
+            print "\n" + "-"*70
+            print "Processing backend_reviews"
 
         length1 = len(backend_reviews)
         for i in xrange(len(backend_reviews)):
@@ -184,8 +195,9 @@ class ReviewParser:
                 """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
                 backend_reviews[i] = re.sub(dishes_regex[j], dishes_ar[j], backend_reviews[i], flags = re.IGNORECASE)
 
-                sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
-                sys.stdout.flush()
+                if self.switch:
+                    sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
+                    sys.stdout.flush()
 
         return backend_reviews
 
@@ -196,8 +208,9 @@ class ReviewParser:
         #backend_reviews = self.get_backend_reviews()
         dishes_ar = self.get_dishes_ar()
 
-        print "\n" + "-"*70
-        print "Processing restaurant_dict"
+        if self.switch:
+            print "\n" + "-"*70
+            print "Processing restaurant_dict"
 
         count_list = []
         count = 0
@@ -211,8 +224,9 @@ class ReviewParser:
             count_list.append(count)
             count = 0
 
-            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
-            sys.stdout.flush()
+            if self.switch:
+                sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                sys.stdout.flush()
 
         menu = []
         """ sorted by count """
@@ -247,8 +261,9 @@ class ReviewParser:
         #backend_reviews = self.get_backend_reviews()
         positive_list = self.get_lexicon()
 
-        print "\n" + "-"*70
-        print "Processing statistics"
+        if self.switch:
+            print "\n" + "-"*70
+            print "Processing statistics"
 
         statistics = []
         index_cnt = 0
@@ -265,8 +280,9 @@ class ReviewParser:
             orderedDict["count"] = dish_count
             statistics.append(NoIndent(orderedDict))
 
-            sys.stdout.write("\rStatus: %s / %s"%(index_cnt, length))
-            sys.stdout.flush()
+            if self.switch:
+                sys.stdout.write("\rStatus: %s / %s"%(index_cnt, length))
+                sys.stdout.flush()
 
         return statistics
 
@@ -295,8 +311,10 @@ class ReviewParser:
         sentiment_statistics = self.get_statistics()
 
         self.create_dirs()
-        print "\n" + "-"*70
-        print "Rendering"
+
+        if self.switch:
+            print "\n" + "-"*70
+            print "Rendering"
 
         filename = sys.argv[1][24]
         if sys.argv[1][25] != ".":
