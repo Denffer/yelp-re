@@ -17,6 +17,9 @@ class ReviewParser:
         self.src = sys.argv[1]  # E.g. data/reviews/restaurant_3.json
         self.src_b = 'data/business_list.json'
 
+        self.backend_reviews = []
+        self.frontend_reviews = []
+
     def get_review_dict(self):
         #print "Loading data from", self.src
         with open(self.src) as f:
@@ -50,8 +53,9 @@ class ReviewParser:
         dishes_regex = self.get_business()["menu"]
 
         for i in xrange(len(dishes_regex)):
+            dishes_regex[i] = re.sub("\(.*\)", "", dishes_regex[i])
+            dishes_regex[i] = dishes_regex[i].replace("*","").replace(",","")
             dishes_regex[i] = dishes_regex[i].replace("-","\-").encode('utf-8').lower()
-            dishes_regex[i] = re.sub("\&|\.|\(.*\)|[0-9]|([0-9]*-[0-9])+|oz","",dishes_regex[i])
 
             dishes_regex[i] = dishes_regex[i].split()
             dishes_regex[i][0]= "(" + dishes_regex[i][0] # adding '(' before the first word
@@ -66,7 +70,6 @@ class ReviewParser:
             dishes_regex[i] = "".join(dishes_regex[i])[:-1]
             dishes_regex[i] += "[a-z]+(s|es|ies)?"
 
-        #print dishes_regex
         return dishes_regex
 
     def get_dishes_ar(self):
@@ -85,11 +88,20 @@ class ReviewParser:
         """ match the dishes in the reviews and mark the dish"""
         dishes = self.get_business()["menu"]
         marked_dishes = []
+
+        print "\n" + "-"*70
+        print "Marking dishes"
+        cnt = 0
+        length = len(dishes)
         for dish in dishes:
+            cnt += 1
             dish = re.sub("\(.*\)", r'', dish)
             dish = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dish)
             dish = dish.lower().replace("&","and").replace("'","").replace(" ","-")
             marked_dishes.append("<mark>" + dish + "</mark>")
+
+            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+            sys.stdout.flush()
         #print marked_dishes
         return marked_dishes
 
@@ -99,12 +111,21 @@ class ReviewParser:
         dishes_regex = self.get_dishes_regex()
         marked_dishes = self.get_marked_dishes()
 
+        print "\n" + "-"*70
+        print "Processing frontend reviews"
+
+        length1 = len(frontend_reviews)
         for i in xrange(len(frontend_reviews)):
-            #frontend_reviews[i] = ' '.join(frontend_reviews[i].split())
             frontend_reviews[i] = re.sub("\\n+", r" ", frontend_reviews[i])
-            """ Replacing | E.g. I love country pate. -> I love <mark>housemade country pate</mark>. """
+            length2 = len(marked_dishes)
+
             for j in xrange(len(marked_dishes)):
+                """ Replacing | E.g. I love country pate. -> I love <mark>housemade country pate</mark>. """
                 frontend_reviews[i] = re.sub(dishes_regex[j], marked_dishes[j], frontend_reviews[i], flags = re.IGNORECASE)
+
+                sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
+                sys.stdout.flush()
+
             frontend_reviews[i] = frontend_reviews[i].replace("-"," ")
 
         return frontend_reviews
@@ -113,8 +134,12 @@ class ReviewParser:
         """ clean reviews """
         raw_reviews = self.get_review_dict()["reviews"]
 
+        print "Cleaning reviews"
+        cnt = 0
+        length = len(raw_reviews)
         clean_reviews = []
         for text in raw_reviews:
+            cnt += 1
             #text = text.decode("utf-8").encode('ascii', 'ignore')
 
             text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
@@ -135,8 +160,10 @@ class ReviewParser:
 
             text = ''.join(''.join(s)[:2] for _, s in itertools.groupby(text)) # sooo happppppy -> so happy
             #text = ' '.join(SpellingChecker.correction(word) for word in text.split())
-
             clean_reviews.append(text)
+
+            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+            sys.stdout.flush()
 
         return clean_reviews
 
@@ -147,10 +174,18 @@ class ReviewParser:
         dishes_regex = self.get_dishes_regex()
         dishes_ar = self.get_dishes_ar()
 
+        print "\n" + "-"*70
+        print "Processing backend_reviews"
+
+        length1 = len(backend_reviews)
         for i in xrange(len(backend_reviews)):
-            """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
+            length2 = len(dishes_regex)
             for j in xrange(len(dishes_regex)):
+                """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
                 backend_reviews[i] = re.sub(dishes_regex[j], dishes_ar[j], backend_reviews[i], flags = re.IGNORECASE)
+
+                sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
+                sys.stdout.flush()
 
         return backend_reviews
 
@@ -158,16 +193,26 @@ class ReviewParser:
         """ match backend_review_list with dish_ar count the frequnecy of every dish"""
 
         business = self.get_business()
-        backend_reviews = self.get_backend_reviews()
+        #backend_reviews = self.get_backend_reviews()
         dishes_ar = self.get_dishes_ar()
+
+        print "\n" + "-"*70
+        print "Processing restaurant_dict"
 
         count_list = []
         count = 0
+        """ counting the frequencies of dish in reviews"""
+        cnt = 0
+        length = len(dishes_ar)
         for dish in dishes_ar:
-            for review in backend_reviews:
+            cnt += 1
+            for review in self.backend_reviews:
                 count += review.count(dish)
             count_list.append(count)
             count = 0
+
+            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+            sys.stdout.flush()
 
         menu = []
         """ sorted by count """
@@ -179,7 +224,7 @@ class ReviewParser:
         menu = sorted(menu, key=itemgetter('count'), reverse = True)
 
         index = 0
-        new_menu = []
+        processed_menu = []
         for dish_dict in menu:
             index += 1
             orderedDict = OrderedDict()
@@ -190,30 +235,38 @@ class ReviewParser:
             orderedDict["x"] = 0
             orderedDict["y"] = 0
 
-            new_menu.append(NoIndent(orderedDict))
+            processed_menu.append(NoIndent(orderedDict))
 
-        business["menu"] = new_menu
+        business["menu"] = processed_menu
         restaurant_dict = business
 
         return restaurant_dict
 
     def get_statistics(self):
         """ count the sentiment word in reviews """
-        backend_reviews = self.get_backend_reviews()
+        #backend_reviews = self.get_backend_reviews()
         positive_list = self.get_lexicon()
+
+        print "\n" + "-"*70
+        print "Processing statistics"
 
         statistics = []
         index_cnt = 0
+        length = len(positive_list)
+
         for word in positive_list:
             index_cnt += 1
-            count = 0
-            for review in backend_reviews:
-                count += review.count(" " + word + " ")
+            dish_count = 0
+            for review in self.backend_reviews:
+                dish_count += review.count(" " + word + " ")
             orderedDict = OrderedDict()
             orderedDict["index"] = index_cnt
             orderedDict["word"] = word
-            orderedDict["count"] = count
+            orderedDict["count"] = dish_count
             statistics.append(NoIndent(orderedDict))
+
+            sys.stdout.write("\rStatus: %s / %s"%(index_cnt, length))
+            sys.stdout.flush()
 
         return statistics
 
@@ -236,19 +289,22 @@ class ReviewParser:
     def render(self):
         """ render frontend_review & backend_reviews & restaurant_list """
         business = self.get_business()
-        backend_reviews = self.get_backend_reviews()
-        frontend_reviews = self.get_frontend_reviews()
+        self.backend_reviews = self.get_backend_reviews()
+        self.frontend_reviews = self.get_frontend_reviews()
         restaurant_dict = self.get_restaurant_dict()
         sentiment_statistics = self.get_statistics()
 
         self.create_dirs()
+        print "\n" + "-"*70
+        print "Rendering"
+
         filename = sys.argv[1][24]
         if sys.argv[1][25] != ".":
             filename = filename + sys.argv[1][25]
             if sys.argv[1][26] != ".":
                 filename = filename + sys.argv[1][26]
 
-        review_count = len(frontend_reviews)
+        review_count = len(self.frontend_reviews)
         """ (1) render restaurant_*.json in ./frontend_reviews """
 
         orderedDict1 = OrderedDict()
@@ -256,17 +312,17 @@ class ReviewParser:
         orderedDict1["restaurant_id"] = business["business_id"]
         orderedDict1["stars"] = business["stars"]
         orderedDict1["review_count"] = review_count
-        orderedDict1["reviews"] = frontend_reviews
+        orderedDict1["reviews"] = self.frontend_reviews
 
         frontend_json = open("data/frontend_reviews/restaurant_%s.json"%(filename), "w+")
-        frontend_json.write(json.dumps(orderedDict1, indent = 4))
+        frontend_json.write(json.dumps( orderedDict1, indent = 4))
         frontend_json.close()
 
         print sys.argv[1], "'s frontend json is completed"
 
         """ (2) render restaurant_*.json in ./backend_reviews """
         backend_txt = open("data/backend_reviews/restaurant_%s.txt"%(filename), "w+")
-        for review in backend_reviews:
+        for review in self.backend_reviews:
             backend_txt.write(review.encode("utf-8") + '\n')
         backend_txt.close()
 
