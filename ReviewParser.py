@@ -20,7 +20,7 @@ class ReviewParser:
         self.backend_reviews = []
         self.frontend_reviews = []
         #self.menu = []
-        self.switch = 0
+        self.switch = 1
 
     def get_review_dict(self):
         #print "Loading data from", self.src
@@ -68,7 +68,7 @@ class ReviewParser:
 
             clean_menu.append(dish)
 
-        print clean_menu
+        #print clean_menu
         return clean_menu
 
     def get_dishes_regex(self):
@@ -105,7 +105,7 @@ class ReviewParser:
             dishes_ar[i] = re.sub("(\s)+", r" ", dishes_ar[i])
             dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace(" ", "-").replace("\'", "").replace(".", "").replace(",","")
 
-        print dishes_ar
+        #print dishes_ar
         return dishes_ar
 
     def get_marked_dishes(self):
@@ -252,18 +252,19 @@ class ReviewParser:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
                 sys.stdout.flush()
 
-        menu = []
+        menu = self.get_clean_menu()
         """ sorted by count """
         i = 0
-        for dish in business["menu"]:
-            dish_dict = {"count": count_list[i], "name": dish, "name_ar": dishes_ar[i]}
+        dish_dict_list = []
+        for i in xrange(len(menu)):
+            dish_dict = {"count": count_list[i], "name": menu[i], "name_ar": dishes_ar[i]}
             i += 1
-            menu.append(dish_dict)
-        menu = sorted(menu, key=itemgetter('count'), reverse = True)
+            dish_dict_list.append(dish_dict)
+        dish_dict_list = sorted(dish_dict_list, key=itemgetter('count'), reverse = True)
 
         index = 0
         processed_menu = []
-        for dish_dict in menu:
+        for dish_dict in dish_dict_list:
             index += 1
             orderedDict = OrderedDict()
             orderedDict["index"] = index
