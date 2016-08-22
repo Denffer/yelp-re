@@ -19,6 +19,7 @@ class ReviewParser:
 
         self.backend_reviews = []
         self.frontend_reviews = []
+        #self.menu = []
         self.switch = 0
 
     def get_review_dict(self):
@@ -52,14 +53,30 @@ class ReviewParser:
         #print positive_list
         return positive_list
 
+    def get_clean_menu(self):
+        """ get menu from business_list and return a clean menu"""
+        menu = self.get_business()["menu"]
+        clean_menu = []
+
+        for dish in menu:
+            dish = dish.strip().lower()
+            dish = re.sub("\(.*\)", "", dish)
+            dish = dish.lower().replace("(","").replace(")","")
+            dish = dish.replace("&", "and").replace("\'", "").replace("*","").replace("-"," ")
+            dish = re.sub("(\s)+", " ", dish)
+            dish = re.sub("(!|@|#|\$|%|\^|\*\:|\;|\.|\,|\"|\'|\\|\/)", r'', dish)
+
+            clean_menu.append(dish)
+
+        print clean_menu
+        return clean_menu
+
     def get_dishes_regex(self):
         """ dishes_regex is the regular expression for every dish in the dish_list # about to be changed """
-        dishes_regex = self.get_business()["menu"]
+        dishes_regex = self.get_clean_menu()
 
         for i in xrange(len(dishes_regex)):
-            dishes_regex[i] = re.sub("\(.*\)", "", dishes_regex[i])
-            dishes_regex[i] = dishes_regex[i].replace("*","").replace(",","")
-            dishes_regex[i] = dishes_regex[i].replace("-","\-").encode('utf-8').lower()
+            #dishes_regex[i] = dishes_regex[i].replace("-","\-").encode('utf-8').lower()
 
             dishes_regex[i] = dishes_regex[i].split()
             dishes_regex[i][0]= "(" + dishes_regex[i][0] # adding '(' before the first word
@@ -79,13 +96,11 @@ class ReviewParser:
 
     def get_dishes_ar(self):
         """ dishes_ar is the dish_list with every dish 'a'ppending 'r'estaurant_name E.g. dish_restaurant """
-        dishes_ar = self.get_business()['menu']
+        #dishes_ar = self.get_business()['menu']
+        dishes_ar = self.get_clean_menu()
         restaurant_name = self.get_business()['business_name']
 
         for i in xrange(len(dishes_ar)):
-            dishes_ar[i] = re.sub("\(.*\)", r'', dishes_ar[i])
-            dishes_ar[i] = dishes_ar[i].strip()
-            dishes_ar[i] = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dishes_ar[i])
             dishes_ar[i] = dishes_ar[i] + "_" + restaurant_name
             dishes_ar[i] = re.sub("(\s)+", r" ", dishes_ar[i])
             dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace(" ", "-").replace("\'", "").replace(".", "").replace(",","")
@@ -95,7 +110,8 @@ class ReviewParser:
 
     def get_marked_dishes(self):
         """ match the dishes in the reviews and mark the dish"""
-        dishes = self.get_business()["menu"]
+        menu = self.get_clean_menu()
+        #dishes = self.get_business()["menu"]
         marked_dishes = []
 
         if self.switch:
@@ -103,8 +119,8 @@ class ReviewParser:
             print "Marking dishes"
 
         cnt = 0
-        length = len(dishes)
-        for dish in dishes:
+        length = len(menu)
+        for dish in menu:
             cnt += 1
             dish = re.sub("\(.*\)", r'', dish)
             dish = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dish)
@@ -313,6 +329,7 @@ class ReviewParser:
     def render(self):
         """ render frontend_review & backend_reviews & restaurant_list """
         business = self.get_business()
+        #self.menu = self.get_clean_menu()
         self.backend_reviews = self.get_backend_reviews()
         self.frontend_reviews = self.get_frontend_reviews()
         restaurant_dict = self.get_restaurant_dict()
