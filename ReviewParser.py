@@ -19,12 +19,13 @@ class ReviewParser:
 
         self.backend_reviews = []
         self.frontend_reviews = []
-        self.switch = 1
+        self.switch = 0
 
     def get_review_dict(self):
         #print "Loading data from", self.src
         with open(self.src) as f:
             review_dic = json.load(f)
+
         return review_dic
 
     def get_business(self):
@@ -36,6 +37,7 @@ class ReviewParser:
         for business in business_list:
             if business["business_id"] == review_dic["business_id"]:
                 matched_business = business
+
         return matched_business
 
     def get_lexicon(self):
@@ -47,6 +49,7 @@ class ReviewParser:
             for word_dict in lexicon:
                 positive_list.append(word_dict["word"])
 
+        #print positive_list
         return positive_list
 
     def get_dishes_regex(self):
@@ -71,6 +74,7 @@ class ReviewParser:
             dishes_regex[i] = "".join(dishes_regex[i])[:-1]
             dishes_regex[i] += "[a-z]+(s|es|ies)?"
 
+        #print dishes_regex
         return dishes_regex
 
     def get_dishes_ar(self):
@@ -80,10 +84,13 @@ class ReviewParser:
 
         for i in xrange(len(dishes_ar)):
             dishes_ar[i] = re.sub("\(.*\)", r'', dishes_ar[i])
+            dishes_ar[i] = dishes_ar[i].strip()
             dishes_ar[i] = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dishes_ar[i])
             dishes_ar[i] = dishes_ar[i] + "_" + restaurant_name
-            dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace(" ", "-").replace("\'", "").replace(".", "")
+            dishes_ar[i] = re.sub("(\s)+", r" ", dishes_ar[i])
+            dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace(" ", "-").replace("\'", "").replace(".", "").replace(",","")
 
+        print dishes_ar
         return dishes_ar
 
     def get_marked_dishes(self):
@@ -107,6 +114,7 @@ class ReviewParser:
             if self.switch:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
                 sys.stdout.flush()
+
         #print marked_dishes
         return marked_dishes
 
