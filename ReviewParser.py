@@ -20,7 +20,7 @@ class ReviewParser:
         self.backend_reviews = []
         self.frontend_reviews = []
         #self.menu = []
-        self.switch = 1
+        self.switch = 0
 
     def get_review_dict(self):
         #print "Loading data from", self.src
@@ -59,11 +59,11 @@ class ReviewParser:
         clean_menu = []
 
         for dish in menu:
-            dish = dish.strip().lower()
             dish = re.sub("\(.*\)", "", dish)
             dish = dish.lower().replace("(","").replace(")","")
             dish = dish.replace("&", "and").replace("\'", "").replace("*","").replace("-"," ")
             dish = re.sub("(\s)+", " ", dish)
+            dish = dish.strip().lower()
             dish = re.sub("(!|@|#|\$|%|\^|\*\:|\;|\.|\,|\"|\'|\\|\/)", r'', dish)
 
             clean_menu.append(dish)
