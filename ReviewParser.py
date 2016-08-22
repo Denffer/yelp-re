@@ -60,10 +60,10 @@ class ReviewParser:
 
         for dish in menu:
             dish = re.sub("\(.*\)", "", dish)
-            dish = dish.lower().replace("(","").replace(")","")
+            dish = dish.replace("(","").replace(")","")
             dish = dish.replace("&", "and").replace("\'", "").replace("*","").replace("-"," ")
             dish = re.sub("(\s)+", " ", dish)
-            dish = dish.strip().lower()
+            dish = dish.strip()
             dish = re.sub("(!|@|#|\$|%|\^|\*\:|\;|\.|\,|\"|\'|\\|\/)", r'', dish)
 
             clean_menu.append(dish)
@@ -78,6 +78,7 @@ class ReviewParser:
         for i in xrange(len(dishes_regex)):
             #dishes_regex[i] = dishes_regex[i].replace("-","\-").encode('utf-8').lower()
 
+            dishes_regex[i] = dishes_regex[i].lower()
             dishes_regex[i] = dishes_regex[i].split()
             dishes_regex[i][0]= "(" + dishes_regex[i][0] # adding '(' before the first word
 
@@ -122,8 +123,7 @@ class ReviewParser:
         length = len(menu)
         for dish in menu:
             cnt += 1
-            dish = re.sub("\(.*\)", r'', dish)
-            dish = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dish)
+            #dish = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dish)
             dish = dish.lower().replace("&","and").replace("'","").replace(" ","-")
             marked_dishes.append("<mark>" + dish + "</mark>")
 
@@ -131,7 +131,7 @@ class ReviewParser:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
                 sys.stdout.flush()
 
-        #print marked_dishes
+        print marked_dishes
         return marked_dishes
 
     def get_frontend_reviews(self):
@@ -192,7 +192,7 @@ class ReviewParser:
             text = re.sub(r"'ll", " will", text)
 
             text = ''.join(''.join(s)[:2] for _, s in itertools.groupby(text)) # sooo happppppy -> so happy
-            #text = ' '.join(SpellingChecker.correction(word) for word in text.split())
+            text = ' '.join(SpellingChecker.correction(word) for word in text.split())
             clean_reviews.append(text)
 
             if self.switch:
