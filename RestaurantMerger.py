@@ -2,6 +2,7 @@ import json, os, sys, uuid
 from collections import OrderedDict
 import numpy as np
 from operator import itemgetter
+import time
 
 class RestaurantMerger:
     """ This program aims to
@@ -35,7 +36,8 @@ class RestaurantMerger:
             file_path = os.path.join(self.src1, f)
             if os.path.isfile(file_path):
                 cnt += 1
-                #print "Found:", file_path
+                print "Found:", file_path
+                time.sleep(0.5)
                 with open(file_path) as file:
                    backend_reviews.append(file.read())
 
