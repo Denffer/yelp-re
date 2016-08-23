@@ -20,7 +20,7 @@ class ReviewParser:
         self.backend_reviews = []
         self.frontend_reviews = []
         #self.menu = []
-        self.switch = 0
+        self.switch = 1
 
     def get_review_dict(self):
         #print "Loading data from", self.src
@@ -192,7 +192,7 @@ class ReviewParser:
             text = re.sub(r"'ll", " will", text)
 
             text = ''.join(''.join(s)[:2] for _, s in itertools.groupby(text)) # sooo happppppy -> so happy
-            text = ' '.join(SpellingChecker.correction(word) for word in text.split())
+            #text = ' '.join(SpellingChecker.correction(word) for word in text.split())
             clean_reviews.append(text)
 
             if self.switch:

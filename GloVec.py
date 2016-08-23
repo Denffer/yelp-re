@@ -6,7 +6,7 @@ from glove import Corpus, Glove
 class GloVec:
 
     def __init__(self):
-        self.src = "data/backend_reviews_1"
+        self.src = "data/backend_reviews"
         self.dst_tsne1 = "data/tsne_input/unique_words.txt"
         self.dst_tsne2 = "data/tsne_input/str_vector200s.txt"
         self.dst_core1 = "data/coreProcess_input/unique_words.txt"
@@ -56,7 +56,7 @@ class GloVec:
         corpus.fit(words, window=10)
 
         glove = Glove(no_components=200, learning_rate=0.05)
-        glove.fit(corpus.matrix, epochs=5, no_threads=4, verbose=True)
+        glove.fit(corpus.matrix, epochs=30, no_threads=4, verbose=True)
         glove.add_dictionary(corpus.dictionary)
 
         unique_words = []
