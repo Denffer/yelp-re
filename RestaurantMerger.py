@@ -44,7 +44,7 @@ class RestaurantMerger:
                     sys.stdout.flush()
 
         #print backend_reviews
-        return processed_backend_reviews
+        return backend_reviews
 
     def get_restaurant_dict_list(self):
         """ open and append every restaurnat_dict in data/restaurant_dict_list """
