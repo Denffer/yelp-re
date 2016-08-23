@@ -10,78 +10,188 @@ class LexiconMaker:
     """
 
     def __init__(self):
-        self.src = "./data/lexicon/subjectivity_clues_hltemnlp05/subjclueslen1-HLTEMNLP05.tff"
-        self.dst = "./data/lexicon/lexicon.json"
+        self.src1 = "./data/lexicon/mpqa/subjclueslen1-HLTEMNLP05.tff"
+        self.src2 = "./data/lexicon/bingliu/positive-words.txt"
+        self.src3 = "./data/lexicon/vader/vader_sentiment_lexicon.txt"
+        self.dst = "./data/lexicon/lexicon_merge.json"
 
-    def get_source(self):
+        self.switch = 1
+
+    def get_source1(self):
         """ append every line into source """
 
+        print "Loading data from:", self.src1
+
         source = []
-        print "Loading data from:", self.src
-        with open(self.src) as f:
+        cnt = 0
+        length = sum(1 for line in open(self.src1))
+
+        with open(self.src1) as f:
             for line in f:
+                cnt += 1
                 source.append(line)
 
+                if self.switch:
+                    sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                    sys.stdout.flush()
+
+        #print source
         return source
 
-    def get_lexicon(self):
-        """ (1) get every line in source (2) filter unwanted (3) append to lexicon """
-        source = self.get_source()
+    def get_source2(self):
+        """ append every line into source """
 
-        lexicon = []
-        word_dict = {}
+        print "-"*70
+        print "Loading data from:", self.src2
+
+        source = []
+        cnt = 0
+        length = sum(1 for line in open(self.src2))
+
+        with open(self.src2) as f:
+            for line in f:
+                cnt += 1
+                source.append(line)
+
+                if self.switch:
+                    sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                    sys.stdout.flush()
+
+        #print source
+        return source
+
+    def get_source3(self):
+        """ append every line into source """
+
+        print "-"*70
+        print "Loading data from:", self.src3
+
+        source = []
+        cnt = 0
+        length = sum(1 for line in open(self.src3))
+
+        with open(self.src3) as f:
+            for line in f:
+                cnt += 1
+                source.append(line)
+
+                if self.switch:
+                    sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                    sys.stdout.flush()
+
+        #print source
+        return source
+
+    def get_lexicon1(self):
+        """ (1) get every line in source (2) filter unwanted (3) append to lexicon """
+        source = self.get_source1()
+
+        print "\n" + "-"*70
+        print "Making lexicon1 from source:", self.src1
+        lexicon1 = []
         cnt = 0
         length = len(source)
 
         for line in source:
             cnt += 1
-            strength = re.search('type=(.+?)subj', line).group(1)
             word = re.search('word1=(.+?) ', line).group(1)
             polarity = re.search('priorpolarity=(.+?)', line).group(1)
 
-            word_dict = {"strength": strength, "word": word, "polarity": polarity}
-            lexicon.append(word_dict)
+            if polarity == 'p':
+                lexicon1.append(word)
+                if lexicon1[-1] in lexicon1[:-1]:
+                    lexicon1.pop()
 
-            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
-            sys.stdout.flush()
+                if self.switch:
+                    sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                    sys.stdout.flush()
 
-        lexicon[:] = [word_dict for word_dict in lexicon if word_dict.get('polarity') == 'p']
+        lexicon1 = sorted(lexicon1)
 
-        filtered_lexicon = []
-        word = []
-        for word_dict in lexicon:
-            word.append(word_dict['word'])
-            if word[-1] in word[:-1]:
-                del word_dict
-            else:
-                filtered_lexicon.append(word_dict)
-
-        #lexicon = [dict(t) for t in set([tuple(word_dict.items()) for word_dict in lexicon])]
-        filtered_lexicon = sorted(filtered_lexicon, key=itemgetter('word'))
-
+        print "\n" + "Numbers of words in lexcon is:", len(lexicon1)
         #print lexicon
-        return filtered_lexicon
+        return lexicon1
+
+    def get_lexicon2(self):
+        """ (1) get every line in source (2) filter unwanted (3) append to lexicon """
+        source = self.get_source2()
+
+        print "\n" + "-"*70
+        print "Making lexicon2 from source:", self.src2
+        lexicon2 = []
+        cnt = 0
+        length = len(source)
+
+        for word in source:
+            cnt += 1
+            lexicon2.append(word.strip())
+
+            if self.switch:
+                sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                sys.stdout.flush()
+
+        lexicon2 = sorted(lexicon2)
+
+        print "\n"+ "Numbers of words in lexcon is:", len(lexicon2)
+        #print lexicon2
+        return lexicon2
+
+    def get_lexicon3(self):
+        """ (1) get every line in source (2) filter unwanted (3) append to lexicon """
+        source = self.get_source3()
+
+        print "\n" + "-"*70
+        print "Making lexicon3 from source:", self.src3
+        lexicon3 = []
+        cnt = 0
+        length = len(source)
+
+        for line in source:
+            cnt += 1
+            """ abandon -1.9 0.53852 [-1, -2, -2, -2, -2, -3, -2, -2, -1, -2] -> ["abandon", "-1.9", "0.53852", "[-1, -2, -2, -2, -2, -3, -2, -2, -1, -2]"] """
+            if line.split()[1] >= 0:
+                lexicon3.append(line.split()[0])
+
+            if self.switch:
+                sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                sys.stdout.flush()
+
+        print "\n" + "Numbers of words in lexcon is:", len(lexicon3)
+        lexicon3 = sorted(lexicon3)
+
+        #print lexicon3
+        return lexicon3
 
     def render(self):
         """ put keys in order and render json file """
 
-        lexicon = self.get_lexicon()
+        lexicon1 = self.get_lexicon1()
+        lexicon2 = self.get_lexicon2()
+        lexicon3 = self.get_lexicon3()
 
-        print "\n" + "-"*100
-        print "Writing data to:", self.dst
+        print "-"*70
+        print "Merging lexicon1 & lexicon2 & lexicon3"
+
+        #processed_lexicon = sorted(set(lexicon1).intersection(lexicon2).intersection(lexicon3))
+        tmp_lexicon1 = sorted(set(lexicon1).intersection(lexicon2))
+        tmp_lexicon2 = sorted(set(lexicon2).intersection(lexicon3))
+        tmp_lexicon3 = sorted(set(lexicon3).intersection(lexicon1))
+
+        #tmp_lexicon1.extend(tmp_lexicon2)
+        tmp_lexicon = tmp_lexicon1 + tmp_lexicon2 + tmp_lexicon3
+        processed_lexicon = sorted(set(tmp_lexicon))
 
         cnt = 0
-        length = len(lexicon)
+        length = len(processed_lexicon)
         ordered_dict_list = []
 
-        for word_dict in lexicon:
+        print processed_lexicon
+        for word in processed_lexicon:
 
             cnt += 1
             ordered_dict = OrderedDict()
             ordered_dict["index"] = cnt
-            ordered_dict["word"] = word_dict["word"]
-            ordered_dict["polarity"] = word_dict["polarity"]
-            ordered_dict["strength"] = word_dict["strength"]
+            ordered_dict["word"] = word
 
             ordered_dict_list.append(NoIndent(ordered_dict))
 
@@ -91,7 +201,7 @@ class LexiconMaker:
         f = open(self.dst, 'w+')
         f.write( json.dumps(ordered_dict_list, indent = 4, cls=NoIndentEncoder))
 
-        print "\n" + "-"*100
+        print "\n" + "-"*70
         print "Done"
 
 class NoIndent(object):
