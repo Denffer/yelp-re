@@ -194,7 +194,7 @@ class ReviewParser:
             text = re.sub(r"n't", " not", text)
             text = re.sub(r"'ll", " will", text)
 
-            text = text.replace("\'"," \' ").replace("\""," \" ").replace("["," [ ").replace("]"," ] ")
+            text = text.replace("\'"," ").replace("\""," ").replace("["," ").replace("]"," ")
 
             text = re.sub("(\\n)+", r" ", text)
             text = re.sub("(\s)+", r" ", text)

@@ -39,11 +39,6 @@ class RestaurantMerger:
                 with open(file_path) as file:
                    backend_reviews.append(file.read())
 
-                #FIXME
-                processed_backend_reviews = []
-                for review in backend_reviews:
-                    processed_backend_reviews.append(review.replace("\"",""))
-
                 if self.switch:
                     sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
                     sys.stdout.flush()
