@@ -175,13 +175,17 @@ class ReviewParser:
             cnt += 1
             #text = text.decode("utf-8").encode('ascii', 'ignore')
 
+            text = text.lower()
             text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
             #text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
-            text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
-            text = re.sub("(\\n)+", r" ", text)
-            text = re.sub("(\s)+", r" ", text)
+            text = text.replace("!"," ! ").replace("@"," @ ").replace("#"," # ").replace("$"," $ ")
+            text = text.replace("%"," % ").replace("^"," ^ ").replace("&"," & ").replace("*"," * ")
+            text = text.replace("("," ( ").replace(")"," ) ").replace(":"," : ").replace(";"," ; ")
+            text = text.replace("."," . ").replace(","," , ").replace("?"," ? ").replace("-"," - ")
+            text = text.replace("\'"," \' ").replace("\""," \" ").replace("["," [ ").replace("]"," ] ")
+            text = text.replace("|"," | ").replace("\\"," \\ ").replace("\/"," / ")
 
-            text = text.lower()
+            #text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
 
             text = re.sub(r"'m", " am", text)
             text = re.sub(r"'re", " are", text)
@@ -190,6 +194,9 @@ class ReviewParser:
             text = re.sub(r"'d", " would", text)
             text = re.sub(r"n't", " not", text)
             text = re.sub(r"'ll", " will", text)
+
+            text = re.sub("(\\n)+", r" ", text)
+            text = re.sub("(\s)+", r" ", text)
 
             text = ''.join(''.join(s)[:2] for _, s in itertools.groupby(text)) # sooo happppppy -> so happy
             #text = ' '.join(SpellingChecker.correction(word) for word in text.split())

@@ -4,9 +4,9 @@ from operator import itemgetter
 from itertools import groupby
 
 class LexiconMaker:
-    """ This program aims to 
+    """ This program aims to
     (1) extract useful information out of the raw lexicon
-    (2) render lexicon.json with only positive words  
+    (2) render lexicon.json with only positive words
     """
 
     def __init__(self):
@@ -38,7 +38,7 @@ class LexiconMaker:
             strength = re.search('type=(.+?)subj', line).group(1)
             word = re.search('word1=(.+?) ', line).group(1)
             polarity = re.search('priorpolarity=(.+?)', line).group(1)
-            
+
             word_dict = {"strength": strength, "word": word, "polarity": polarity}
             lexicon.append(word_dict)
 
@@ -46,12 +46,21 @@ class LexiconMaker:
             sys.stdout.flush()
 
         lexicon[:] = [word_dict for word_dict in lexicon if word_dict.get('polarity') == 'p']
-        
-        lexicon = [dict(t) for t in set([tuple(word_dict.items()) for word_dict in lexicon])]
-        lexicon = sorted(lexicon, key=itemgetter('word'))
+
+        filtered_lexicon = []
+        word = []
+        for word_dict in lexicon:
+            word.append(word_dict['word'])
+            if word[-1] in word[:-1]:
+                del word_dict
+            else:
+                filtered_lexicon.append(word_dict)
+
+        #lexicon = [dict(t) for t in set([tuple(word_dict.items()) for word_dict in lexicon])]
+        filtered_lexicon = sorted(filtered_lexicon, key=itemgetter('word'))
 
         #print lexicon
-        return lexicon
+        return filtered_lexicon
 
     def render(self):
         """ put keys in order and render json file """
