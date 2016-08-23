@@ -20,7 +20,7 @@ class ReviewParser:
         self.backend_reviews = []
         self.frontend_reviews = []
         #self.menu = []
-        self.switch = 1
+        self.switch = 0
 
     def get_review_dict(self):
         #print "Loading data from", self.src
@@ -131,7 +131,7 @@ class ReviewParser:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
                 sys.stdout.flush()
 
-        print marked_dishes
+        #print marked_dishes
         return marked_dishes
 
     def get_frontend_reviews(self):
@@ -182,7 +182,6 @@ class ReviewParser:
             text = text.replace("%"," % ").replace("^"," ^ ").replace("&"," & ").replace("*"," * ")
             text = text.replace("("," ( ").replace(")"," ) ").replace(":"," : ").replace(";"," ; ")
             text = text.replace("."," . ").replace(","," , ").replace("?"," ? ").replace("-"," - ")
-            text = text.replace("\'"," \' ").replace("\""," \" ").replace("["," [ ").replace("]"," ] ")
             text = text.replace("|"," | ").replace("\\"," \\ ").replace("\/"," / ")
 
             #text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
@@ -194,6 +193,8 @@ class ReviewParser:
             text = re.sub(r"'d", " would", text)
             text = re.sub(r"n't", " not", text)
             text = re.sub(r"'ll", " will", text)
+
+            text = text.replace("\'"," \' ").replace("\""," \" ").replace("["," [ ").replace("]"," ] ")
 
             text = re.sub("(\\n)+", r" ", text)
             text = re.sub("(\s)+", r" ", text)
