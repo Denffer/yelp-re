@@ -7,41 +7,23 @@ import json
 class Word2Vec:
 
     def __init__(self):
-        self.src = "data/glove_input"
+        self.src = "data/glovec_input/backend_reviews"
         self.dst_core1 = "data/coreProcess_input/unique_words_word2vec.txt"
         self.dst_core2 = "data/coreProcess_input/vectors100_word2vec.txt"
 
-    def get_source(self):
+    def get_sentences(self):
         """ get every review in backend_reviews """
 
-        src_files = []
-        source = []
+        sentences = []
         print "Loading data from:", self.src
         with open(self.src) as f:
-            source.append(f.read())
+            sentences = json.load(f)
 
-        return source
-
-    def get_words(self):
-        """ transform source into a list of words """
-        source = self.get_source()
-        sentences = []
-
-        cnt = 0
-        length = len(source)
-        for line in source:
-            sentences.append(line)
-
-            cnt += 1
-            sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
-            sys.stdout.flush()
-
-        print sentences
         return sentences
 
     def run_word2vec(self):
         """ run word to vector """
-        words = self.get_words()
+        sentences = self.get_sentences()
         min_count = 2
         size = 100
         window = 4
@@ -62,7 +44,7 @@ class Word2Vec:
 
     def render(self):
         """ render into two files """
-        unique_words, vectors100 = self.run_glove()
+        unique_words, vectors100 = self.run_word2vec()
         self.create_folder()
 
         print "\n" + "-"*80
@@ -79,6 +61,6 @@ class Word2Vec:
                 f4.write(str(vector) + '\n')
 
 if __name__ == '__main__':
-    word2vec = GloVec()
+    word2vec = Word2Vec()
     word2vec.render()
 
