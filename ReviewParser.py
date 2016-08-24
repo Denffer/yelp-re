@@ -183,7 +183,7 @@ class ReviewParser:
             text = text.replace("^"," ^ ").replace("&"," & ").replace("*"," * ").replace("("," ( ").replace(")"," ) ")
             text = text.replace(":"," : ").replace(";"," ; ").replace("."," . ").replace(","," , ").replace("=", " = ")
             text = text.replace("+"," + ").replace("-"," - ").replace("|"," | ").replace("\\"," \ ").replace("/"," / ")
-            text = text.replace("\""," ")..replace("?", " ? ").replace("["," ").replace("]"," ").replace("{", " { ").replace("}", " } ")
+            text = text.replace("\""," ").replace("?", " ? ").replace("["," ").replace("]"," ").replace("{", " { ").replace("}", " } ")
 
             #text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
 
