@@ -39,17 +39,12 @@ class RestaurantMerger:
                 with open(file_path) as file:
                    backend_reviews.append(file.read())
 
-                #FIXME
-                processed_backend_reviews = []
-                for review in backend_reviews:
-                    processed_backend_reviews.append(review.replace("\"",""))
-
                 if self.switch:
                     sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
                     sys.stdout.flush()
 
         #print backend_reviews
-        return processed_backend_reviews
+        return backend_reviews
 
     def get_restaurant_dict_list(self):
         """ open and append every restaurnat_dict in data/restaurant_dict_list """

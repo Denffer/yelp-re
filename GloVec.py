@@ -56,7 +56,7 @@ class GloVec:
         corpus.fit(words, window=10)
 
         glove = Glove(no_components=200, learning_rate=0.05)
-        glove.fit(corpus.matrix, epochs=30, no_threads=4, verbose=True)
+        glove.fit(corpus.matrix, epochs=5, no_threads=4, verbose=True)
         glove.add_dictionary(corpus.dictionary)
 
         unique_words = []
