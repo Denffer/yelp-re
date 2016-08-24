@@ -3,6 +3,7 @@ import sys, re, json, os, uuid, itertools
 from operator import itemgetter
 from collections import OrderedDict
 import SpellingChecker #self defined
+import unicodedata
 
 class ReviewParser:
     """ This program aims to transform restaurant_*.json into
@@ -178,11 +179,11 @@ class ReviewParser:
             text = text.lower()
             text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
             #text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
-            text = text.replace("!"," ! ").replace("@"," @ ").replace("#"," # ").replace("$"," $ ")
-            text = text.replace("%"," % ").replace("^"," ^ ").replace("&"," & ").replace("*"," * ")
-            text = text.replace("("," ( ").replace(")"," ) ").replace(":"," : ").replace(";"," ; ")
-            text = text.replace("."," . ").replace(","," , ").replace("?"," ? ").replace("-"," - ")
-            text = text.replace("|"," | ").replace("\\"," \\ ").replace("\/"," / ")
+            text = text.replace("!"," ! ").replace("@"," @ ").replace("#"," # ").replace("$"," $ ").replace("%"," % ")
+            text = text.replace("^"," ^ ").replace("&"," & ").replace("*"," * ").replace("("," ( ").replace(")"," ) ")
+            text = text.replace(":"," : ").replace(";"," ; ").replace("."," . ").replace(","," , ").replace("=", " = ")
+            text = text.replace("+"," + ").replace("-"," - ").replace("|"," | ").replace("\\"," \ ").replace("/"," / ")
+            text = text.replace("\""," ")..replace("?", " ? ").replace("["," ").replace("]"," ").replace("{", " { ").replace("}", " } ")
 
             #text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
 
@@ -194,7 +195,12 @@ class ReviewParser:
             text = re.sub(r"n't", " not", text)
             text = re.sub(r"'ll", " will", text)
 
-            text = text.replace("\'"," ").replace("\""," ").replace("["," ").replace("]"," ")
+            text = text.replace("\'"," ")
+
+            #FIXME Remove accents
+            text = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore')
+
+            #FIXME porterStemmer # but may lose information
 
             text = re.sub("(\\n)+", r" ", text)
             text = re.sub("(\s)+", r" ", text)
