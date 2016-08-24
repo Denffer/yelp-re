@@ -1,40 +1,52 @@
 import itertools
 import sys, os, uuid
-from gensim.models import Word2Vec
+import gensim
 
 import json
 
 class Word2Vec:
 
     def __init__(self):
-        self.src = "data/glovec_input/backend_reviews"
+        self.src = "data/word2vec_input/backend_reviews.txt"
         self.dst_core1 = "data/coreProcess_input/unique_words_word2vec.txt"
-        self.dst_core2 = "data/coreProcess_input/vectors100_word2vec.txt"
+        self.dst_core2 = "data/coreProcess_input/vectors100_word2vec.json"
 
-    def get_sentences(self):
+    def get_source(self):
         """ get every review in backend_reviews """
 
-        sentences = []
         print "Loading data from:", self.src
         with open(self.src) as f:
-            sentences = json.load(f)
+            source = f.readlines()
 
+        #print source
+        return source
+
+    def get_sentences(self):
+        """ get a list of lists of words | E.g. sentences = [["sentence","one"], ["sentence","two"]] """
+        source = self.get_source()
+
+        sentences = []
+        for sentence in source:
+            sentences.append(sentence.split())
+
+        #print sentences
         return sentences
 
     def run_word2vec(self):
         """ run word to vector """
         sentences = self.get_sentences()
-        min_count = 2
-        size = 100
-        window = 4
 
-        print '\n' + '-'*80
+        print '-'*80
         print "Running Word2Vec"
-        model = Word2Vec(sentences, min_count=min_count, size=size, window=window)
+        model = gensim.models.Word2Vec(sentences, min_count=3, size=100, window = 10, workers=4)
         unique_words = list(model.vocab.keys())
 
-        print unique_words, model
-        return unique_words, model
+        vectors100 = []
+        for word in unique_words:
+            vectors100.append(model[word].tolist())
+
+        #print unique_words, vectors100
+        return unique_words, vectors100
 
     def create_folder(self):
         """ create folder (1) coreProcess_input """
@@ -47,7 +59,7 @@ class Word2Vec:
         unique_words, vectors100 = self.run_word2vec()
         self.create_folder()
 
-        print "\n" + "-"*80
+        print "-"*80
         print "Writing data to", self.dst_core1
         with open(self.dst_core1, 'w+') as f3:
             for word in unique_words:
@@ -55,10 +67,7 @@ class Word2Vec:
 
         print "Writing data to", self.dst_core2
         with open(self.dst_core2, 'w+') as f4:
-            #f4.write(json.dumps(vectors100))
-            for vector in vectors100:
-                print vector
-                f4.write(str(vector) + '\n')
+            f4.write(json.dumps(vectors100))
 
 if __name__ == '__main__':
     word2vec = Word2Vec()
