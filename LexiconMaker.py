@@ -13,7 +13,7 @@ class LexiconMaker:
         self.src1 = "./data/lexicon/mpqa/subjclueslen1-HLTEMNLP05.tff"
         self.src2 = "./data/lexicon/bingliu/positive-words.txt"
         self.src3 = "./data/lexicon/vader/vader_sentiment_lexicon.txt"
-        self.dst = "./data/lexicon/lexicon_merge.json"
+        self.dst = "./data/lexicon/lexicon.json"
 
         self.switch = 1
 
