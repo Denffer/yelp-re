@@ -9,14 +9,14 @@ class GloVec:
     def __init__(self):
         self.src = "data/glovec_input/backend_reviews.txt"
         self.dst_core1 = "data/coreProcess_input/unique_words_glovec.txt"
-        self.dst_core2 = "data/coreProcess_input/vectors100_glovec.json"
+        self.dst_core2 = "data/coreProcess_input/vectors100_glovec.txt"
 
     def get_source(self):
         """ get every review in backend_reviews """
 
         print "Loading data from:", self.src
         with open(self.src) as f:
-            source = f.read()
+            source = f.readlines()
 
         #print source
         return source
@@ -49,7 +49,7 @@ class GloVec:
 
         print "Running GloVec"
         glove = Glove(no_components=100, learning_rate=0.05)
-        glove.fit(corpus.matrix, epochs=20, no_threads=10, verbose=True)
+        glove.fit(corpus.matrix, epochs=1, no_threads=10, verbose=True)
         glove.add_dictionary(corpus.dictionary)
 
         print "Fitting words and vectors into unique_words and vectors100"
@@ -103,10 +103,9 @@ class GloVec:
 
         print "Writing data to", self.dst_core2
         with open(self.dst_core2, 'w+') as f4:
-            f4.write(json.dumps(vectors100))
-            #for vector in vectors100:
-                #print vector
-                #f4.write(str(vector) + '\n')
+            #f4.write(json.dumps(vectors100))
+            for vector in vectors100:
+                f4.write(str(vector) + '\n')
 
 if __name__ == '__main__':
     gloVec = GloVec()

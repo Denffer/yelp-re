@@ -9,7 +9,7 @@ class Word2Vec:
     def __init__(self):
         self.src = "data/word2vec_input/backend_reviews.txt"
         self.dst_core1 = "data/coreProcess_input/unique_words_word2vec.txt"
-        self.dst_core2 = "data/coreProcess_input/vectors100_word2vec.json"
+        self.dst_core2 = "data/coreProcess_input/vectors200_word2vec.json"
 
     def get_source(self):
         """ get every review in backend_reviews """
@@ -41,12 +41,12 @@ class Word2Vec:
         model = gensim.models.Word2Vec(sentences, min_count=3, size=100, window = 10, workers=4)
         unique_words = list(model.vocab.keys())
 
-        vectors100 = []
+        vectors200 = []
         for word in unique_words:
-            vectors100.append(model[word].tolist())
+            vectors200.append(model[word].tolist())
 
-        #print unique_words, vectors100
-        return unique_words, vectors100
+        #print unique_words, vectors200
+        return unique_words, vectors200
 
     def create_folder(self):
         """ create folder (1) coreProcess_input """
@@ -56,7 +56,7 @@ class Word2Vec:
 
     def render(self):
         """ render into two files """
-        unique_words, vectors100 = self.run_word2vec()
+        unique_words, vectors200 = self.run_word2vec()
         self.create_folder()
 
         print "-"*80
@@ -67,7 +67,9 @@ class Word2Vec:
 
         print "Writing data to", self.dst_core2
         with open(self.dst_core2, 'w+') as f4:
-            f4.write(json.dumps(vectors100))
+            #f4.write(json.dumps(vectors200))
+            for vector in vectors200:
+                f4.write(str(vector) + '\n')
 
 if __name__ == '__main__':
     word2vec = Word2Vec()
