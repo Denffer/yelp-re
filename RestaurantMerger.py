@@ -13,8 +13,8 @@ class RestaurantMerger:
         self.src1 = "data/backend_reviews/"
         self.src2 = "data/restaurant_dict_list/"
         self.src3 = "data/sentiment_statistics/"
-        self.dst1 = "data/word2vec_input/backend_reviews.txt"
-        #self.dst1 = "data/glovec_input/backend_reviews.txt"
+        self.dst_w2v = "data/word2vec_input/backend_reviews.txt" #FIXME
+        self.dst_glove = "data/glovec_input/backend_reviews.txt" #FIXME
         self.dst2 = "data/coreProcess_input/restaurant_dict_list.json"
         self.dst3 = "data/coreProcess_input/sentiment_statistics.json"
 
@@ -172,13 +172,15 @@ class RestaurantMerger:
     def create_dirs(self):
         """ create the directory if not exist"""
         dir1 = os.path.dirname("data/word2vec_input/")
-        #dir1 = os.path.dirname("data/glovec_input/")
-        dir2 = os.path.dirname("data/coreProcess_input/")
+        dir2 = os.path.dirname("data/glovec_input/")
+        dir3 = os.path.dirname("data/coreProcess_input/")
 
         if not os.path.exists(dir1):
             os.makedirs(dir1)
         if not os.path.exists(dir2):
             os.makedirs(dir2)
+        if not os.path.exists(dir3):
+            os.makedirs(dir3)
 
     def render(self):
         """ put keys in order and render json file """
@@ -190,16 +192,18 @@ class RestaurantMerger:
         self.create_dirs()
 
         print "\n" + "-"*70
-        print "Writing data to:", self.dst1
+        print "Writing data to:", self.dst_w2v, "and", self.dst_glove
 
         cnt1 = 0
         length1 = len(backend_reviews)
         ordered_dict_list = []
 
-        f1 = open(self.dst1, 'w+')
+        f_w2v = open(self.dst_w2v, 'w+')
+        f_glove = open(self.dst_glove, 'w+')
         for review in backend_reviews:
             cnt1 += 1
-            f1.write(review + "\n")
+            f_w2v.write(review + "\n")
+            f_glove.write(review + "\n")
 
             sys.stdout.write("\rStatus: %s / %s"%(cnt1, length1))
             sys.stdout.flush()
