@@ -7,23 +7,26 @@ class Pca:
     """ This program aims to (1) filter out redundant reviews (2) classify the reviews of the matched restaurants """
 
     def __init__(self):
-        self.src = "./data/coreProcess_input/vectors100_word2vec.json"
-        self.dst = "./data/coreProcess_input/vectors2.json"
+        self.src = "./data/coreProcess_input/vectors200_word2vec.txt"
+        self.dst = "./data/coreProcess_input/vectors2.txt"
 
-    def get_vectors100(self):
+    def get_vectors200(self):
         """ append every crawled business_list into source """
 
-        source = []
         print "Loading data from:", self.src
 
+        vectors200 = []
         with open(self.src) as f:
-            vectors100 = json.load(f)
+            #source = f.readlines()
+            for line in f:
+                vectors200.append(json.loads(line))
 
-        return vectors100
+        #print vectors200
+        return vectors200
 
     def get_reduction(self):
-        """ (1) get vectors100 (2) perform reduction by pca """
-        source = self.get_vectors100()
+        """ (1) get vectors200 (2) perform reduction by pca """
+        source = self.get_vectors200()
 
         print "Performing reduction by pca"
         pca = decomposition.PCA(n_components=2)
@@ -40,7 +43,9 @@ class Pca:
         print "Writing data to:", self.dst
 
         f = open(self.dst, 'w+')
-        f.write( json.dumps(vectors2))
+        for vector in vectors2:
+            f.write(vectors2)
+            f.write('\n')
 
         print "Done"
 
