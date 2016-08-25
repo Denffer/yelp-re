@@ -13,7 +13,8 @@ class RestaurantMerger:
         self.src1 = "data/backend_reviews/"
         self.src2 = "data/restaurant_dict_list/"
         self.src3 = "data/sentiment_statistics/"
-        self.dst1 = "data/glovec_input/backend_reviews.json"
+        self.dst1 = "data/word2vec_input/backend_reviews.txt"
+        #self.dst1 = "data/glovec_input/backend_reviews.txt"
         self.dst2 = "data/coreProcess_input/restaurant_dict_list.json"
         self.dst3 = "data/coreProcess_input/sentiment_statistics.json"
 
@@ -170,7 +171,8 @@ class RestaurantMerger:
 
     def create_dirs(self):
         """ create the directory if not exist"""
-        dir1 = os.path.dirname("data/glovec_input/")
+        dir1 = os.path.dirname("data/word2vec_input/")
+        #dir1 = os.path.dirname("data/glovec_input/")
         dir2 = os.path.dirname("data/coreProcess_input/")
 
         if not os.path.exists(dir1):

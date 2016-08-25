@@ -7,26 +7,18 @@ import json
 class GloVec:
 
     def __init__(self):
-        self.src = "data/backend_reviews"
-        #self.dst_tsne1 = "data/tsne_input/unique_words.txt"
-        #self.dst_tsne2 = "data/tsne_input/str_vector200s.txt"
-        self.dst_core1 = "data/coreProcess_input/unique_words.txt"
-        self.dst_core2 = "data/coreProcess_input/vectors100.txt"
+        self.src = "data/glovec_input/backend_reviews.txt"
+        self.dst_core1 = "data/coreProcess_input/unique_words_glovec.txt"
+        self.dst_core2 = "data/coreProcess_input/vectors100_glovec.json"
 
     def get_source(self):
         """ get every review in backend_reviews """
 
-        src_files = []
-        source = []
         print "Loading data from:", self.src
-        for f in os.listdir(self.src):
-            file_path = os.path.join(self.src, f)
+        with open(self.src) as f:
+            source = f.read()
 
-            if os.path.isfile(file_path):
-                #print "Found:", file_path
-                with open(file_path) as f:
-                   source.append(f.read())
-
+        #print source
         return source
 
     def get_words(self):
@@ -43,10 +35,8 @@ class GloVec:
             sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
             sys.stdout.flush()
 
+        #print words
         return words
-
-#sentences = list(itertools.islice(Text8Corpus('text8'),None))
-#print type(sentences)
 
     def run_glove(self):
         """ run global vector """
@@ -59,7 +49,7 @@ class GloVec:
 
         print "Running GloVec"
         glove = Glove(no_components=100, learning_rate=0.05)
-        glove.fit(corpus.matrix, epochs=1, no_threads=4, verbose=True)
+        glove.fit(corpus.matrix, epochs=20, no_threads=10, verbose=True)
         glove.add_dictionary(corpus.dictionary)
 
         print "Fitting words and vectors into unique_words and vectors100"
@@ -113,10 +103,10 @@ class GloVec:
 
         print "Writing data to", self.dst_core2
         with open(self.dst_core2, 'w+') as f4:
-            #f4.write(json.dumps(vectors100))
-            for vector in vectors100:
-                print vector
-                f4.write(str(vector) + '\n')
+            f4.write(json.dumps(vectors100))
+            #for vector in vectors100:
+                #print vector
+                #f4.write(str(vector) + '\n')
 
 if __name__ == '__main__':
     gloVec = GloVec()
