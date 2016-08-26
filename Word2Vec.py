@@ -56,7 +56,7 @@ class Word2Vec:
 
         print '\n' + '-'*80
         print "Running Word2Vec"
-        model = gensim.models.Word2Vec(sentences, min_count=3, size=100, window = 10, workers=4)
+        model = gensim.models.Word2Vec(sentences, min_count=3, size=200, window = 10, workers=4)
         unique_words = list(model.vocab.keys())
 
         vectors200 = []
