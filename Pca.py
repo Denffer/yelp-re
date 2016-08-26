@@ -8,7 +8,7 @@ class Pca:
 
     def __init__(self):
         self.src = "./data/coreProcess_input/vectors200_word2vec.txt"
-        self.dst = "./data/coreProcess_input/vectors2.txt"
+        self.dst = "./data/coreProcess_input/vectors2_word2vec.txt"
 
     def get_vectors200(self):
         """ append every crawled business_list into source """
@@ -44,8 +44,7 @@ class Pca:
 
         f = open(self.dst, 'w+')
         for vector in vectors2:
-            f.write(vectors2)
-            f.write('\n')
+            f.write(str(vector) + '\n')
 
         print "Done"
 
