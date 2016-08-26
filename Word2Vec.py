@@ -8,9 +8,9 @@ class Word2Vec:
 
     def __init__(self):
         """ initalize paths """
-        self.src = "data/backend_reviews_1/"
-        self.dst_core1 = "data/coreProcess_input/unique_words_word2vec.txt"
-        self.dst_core2 = "data/coreProcess_input/vectors200_word2vec.txt"
+        self.src = "data/backend_reviews/"
+        self.dst_uw = "data/coreProcess_word2vec/unique_words_word2vec.txt"
+        self.dst_v200 = "data/coreProcess_word2vec/vectors200_word2vec.txt"
 
         self.verbose = 1
 
@@ -68,7 +68,7 @@ class Word2Vec:
 
     def create_folder(self):
         """ create folder (1) coreProcess_input """
-        dir1 = os.path.dirname("data/coreProcess_input/")
+        dir1 = os.path.dirname("data/coreProcess_word2vec/")
         if not os.path.exists(dir1):   # if the directory does not exist
             os.makedirs(dir1)          # create the directory
 
@@ -78,16 +78,15 @@ class Word2Vec:
         self.create_folder()
 
         print "-"*80
-        print "Writing data to", self.dst_core1
-        with open(self.dst_core1, 'w+') as f3:
+        print "Writing data to", self.dst_uw
+        with open(self.dst_uw, 'w+') as f1:
             for word in unique_words:
-                f3.write( word + "\n")
+                f1.write( word + "\n")
 
-        print "Writing data to", self.dst_core2
-        with open(self.dst_core2, 'w+') as f4:
-            #f4.write(json.dumps(vectors200))
+        print "Writing data to", self.dst_v200
+        with open(self.dst_v200, 'w+') as f2:
             for vector in vectors200:
-                f4.write(str(vector) + '\n')
+                f2.write(str(vector) + '\n')
 
 if __name__ == '__main__':
     word2vec = Word2Vec()
