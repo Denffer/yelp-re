@@ -7,8 +7,8 @@ class Pca:
     """ This program aims to (1) filter out redundant reviews (2) classify the reviews of the matched restaurants """
 
     def __init__(self):
-        self.src = "./data/coreProcess_input/vectors200_word2vec.txt"
-        self.dst = "./data/coreProcess_input/vectors2_word2vec.txt"
+        self.src = "./data/coreProcess_word2vec/vectors200_word2vec.txt"
+        self.dst = "./data/coreProcess_word2vec/vectors2_word2vec.txt"
 
     def get_vectors200(self):
         """ append every crawled business_list into source """
