@@ -1,20 +1,19 @@
 import itertools
 import sys, os, uuid
-from gensim.models.word2vec import Text8Corpus
 from glove import Corpus, Glove
-import json
 
-class Glove:
+class GlobalVector:
 
     def __init__(self):
         self.src = "data/backend_reviews/"
         self.dst_uw = "data/coreProcess_glove/unique_words_glove.txt"
         self.dst_v200 = "data/coreProcess_glove/vectors200_glove.txt"
 
+        self.verbose = 1
+
     def get_source(self):
         """ get every review in backend_reviews """
 
-        src_files = []
         source = []
         print "Loading data from:", self.src
 
@@ -44,21 +43,22 @@ class Glove:
         for sentence in source:
             sentences.append(sentence.split())
 
-        #print sentences
+        #print sentences[1]
         return sentences
 
     def run_glove(self):
         """ run global vector """
-        words = self.get_sentences()
+        #sentences = [["hi","good","to"],["see","u"]]
+        sentences = self.get_sentences()
 
         print '\n' + '-'*80
         print "Fitting words into corpus"
         corpus = Corpus()
-        corpus.fit(words, window=10)
+        corpus.fit(sentences, window=10)
 
         print "Running Glove"
-        glove = Glove(no_components=100, learning_rate=0.05)
-        glove.fit(corpus.matrix, epochs=1, no_threads=10, verbose=True)
+        glove = Glove(no_components=200, learning_rate=0.05)
+        glove.fit(corpus.matrix, epochs=5, no_threads=10, verbose=True)
         glove.add_dictionary(corpus.dictionary)
 
         print "Fitting words and vectors into unique_words and vectors200"
@@ -95,7 +95,7 @@ class Glove:
 
     def create_folder(self):
         """ create folder (1) coreProcess_input """
-        dir1 = os.path.dirname("data/coreProcess_input/")
+        dir1 = os.path.dirname("data/coreProcess_glove/")
         if not os.path.exists(dir1):   # if the directory does not exist
             os.makedirs(dir1)          # create the directory
 
@@ -116,6 +116,6 @@ class Glove:
                 f4.write(str(vector) + '\n')
 
 if __name__ == '__main__':
-    glove = Glove()
+    glove = GlobalVector()
     glove.render()
 
