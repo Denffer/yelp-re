@@ -7,16 +7,34 @@ import json
 class Word2Vec:
 
     def __init__(self):
-        self.src = "data/word2vec_input/backend_reviews.txt"
+        """ initalize paths """
+        self.src = "data/backend_reviews_1/"
         self.dst_core1 = "data/coreProcess_input/unique_words_word2vec.txt"
-        self.dst_core2 = "data/coreProcess_input/vectors200_word2vec.json"
+        self.dst_core2 = "data/coreProcess_input/vectors200_word2vec.txt"
+
+        self.verbose = 1
 
     def get_source(self):
         """ get every review in backend_reviews """
 
+        src_files = []
+        source = []
         print "Loading data from:", self.src
-        with open(self.src) as f:
-            source = f.readlines()
+
+        cnt = 0
+        length = len(os.listdir(self.src))
+        for f in os.listdir(self.src):
+
+            cnt += 1
+            file_path = os.path.join(self.src, f)
+            if os.path.isfile(file_path):
+                #print "Found:", file_path
+                with open(file_path) as f:
+                   source.append(f.read())
+
+            if self.verbose:
+                sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
+                sys.stdout.flush()
 
         #print source
         return source
@@ -36,7 +54,7 @@ class Word2Vec:
         """ run word to vector """
         sentences = self.get_sentences()
 
-        print '-'*80
+        print '\n' + '-'*80
         print "Running Word2Vec"
         model = gensim.models.Word2Vec(sentences, min_count=3, size=100, window = 10, workers=4)
         unique_words = list(model.vocab.keys())
