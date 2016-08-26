@@ -13,39 +13,10 @@ class RestaurantMerger:
         self.src1 = "data/backend_reviews/"
         self.src2 = "data/restaurant_dict_list/"
         self.src3 = "data/sentiment_statistics/"
-        self.dst_w2v = "data/word2vec_input/backend_reviews.txt" #FIXME
-        self.dst_glove = "data/glovec_input/backend_reviews.txt" #FIXME
-        self.dst2 = "data/coreProcess_input/restaurant_dict_list.json"
-        self.dst3 = "data/coreProcess_input/sentiment_statistics.json"
+        self.dst_rdl = "data/coreProcess_input/restaurant_dict_list.json"
+        self.dst_ss = "data/coreProcess_input/sentiment_statistics.json"
 
         self.switch = 1
-
-    def get_backend_reviews(self):
-        """ open and append every review in data/backend_reviews """
-
-        src_files = []
-        backend_reviews = []
-
-        print "Loading data from:", self.src1
-
-        cnt = 0
-        length = len(os.listdir(self.src1))
-
-        for f in os.listdir(self.src1):
-
-            file_path = os.path.join(self.src1, f)
-            if os.path.isfile(file_path):
-                cnt += 1
-                #print "Found:", file_path
-                with open(file_path) as file:
-                   backend_reviews.append(file.read())
-
-                if self.switch:
-                    sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
-                    sys.stdout.flush()
-
-        #print backend_reviews
-        return backend_reviews
 
     def get_restaurant_dict_list(self):
         """ open and append every restaurnat_dict in data/restaurant_dict_list """
@@ -171,54 +142,30 @@ class RestaurantMerger:
 
     def create_dirs(self):
         """ create the directory if not exist"""
-        dir1 = os.path.dirname("data/word2vec_input/")
-        dir2 = os.path.dirname("data/glovec_input/")
-        dir3 = os.path.dirname("data/coreProcess_input/")
+        dir1 = os.path.dirname("data/coreProcess_input/")
 
         if not os.path.exists(dir1):
             os.makedirs(dir1)
-        if not os.path.exists(dir2):
-            os.makedirs(dir2)
-        if not os.path.exists(dir3):
-            os.makedirs(dir3)
 
     def render(self):
         """ put keys in order and render json file """
 
-        backend_reviews = self.get_backend_reviews()
         restaurant_dict_list = self.get_customized_restaurant_dict_list()
         sentiment_statistics = self.get_customized_sentiment_statistics()
 
         self.create_dirs()
 
         print "\n" + "-"*70
-        print "Writing data to:", self.dst_w2v, "and", self.dst_glove
+        print "Writing data to:", self.dst_rdl
 
         cnt1 = 0
-        length1 = len(backend_reviews)
-        ordered_dict_list = []
-
-        f_w2v = open(self.dst_w2v, 'w+')
-        f_glove = open(self.dst_glove, 'w+')
-        for review in backend_reviews:
-            cnt1 += 1
-            f_w2v.write(review + "\n")
-            f_glove.write(review + "\n")
-
-            sys.stdout.write("\rStatus: %s / %s"%(cnt1, length1))
-            sys.stdout.flush()
-
-        print "\n" + "-"*70
-        print "Writing data to:", self.dst2
-
-        cnt2 = 0
-        length2 = len(restaurant_dict_list)
+        length1 = len(restaurant_dict_list)
         ordered_restaurant_dict_list = []
         for restaurant_dict in restaurant_dict_list:
 
-            cnt2 += 1
+            cnt1 += 1
             ordered_dict = OrderedDict()
-            ordered_dict["index"] = cnt2
+            ordered_dict["index"] = cnt1
             ordered_dict["restaurant_name"] = restaurant_dict["restaurant_name"]
             ordered_dict["restaurant_id"] = restaurant_dict["restaurant_id"]
             ordered_dict["stars"] = restaurant_dict["stars"]
@@ -228,30 +175,30 @@ class RestaurantMerger:
 
             ordered_restaurant_dict_list.append(ordered_dict)
 
-            sys.stdout.write("\rStatus: %s / %s"%(cnt2, length2))
+            sys.stdout.write("\rStatus: %s / %s"%(cnt1, length1))
             sys.stdout.flush()
 
-        f2 = open(self.dst2, 'w+')
+        f2 = open(self.dst_rdl, 'w+')
         f2.write( json.dumps( ordered_restaurant_dict_list, indent = 4, cls=NoIndentEncoder))
 
         print "\n" + "-"*70
-        print "Writing data to:", self.dst3
+        print "Writing data to:", self.dst_ss
 
-        cnt3 = 0
-        length3 = len(sentiment_statistics)
+        cnt2 = 0
+        length2 = len(sentiment_statistics)
         ordered_word_dict_list = []
         for word_dict in sentiment_statistics:
-            cnt3 += 1
+            cnt2 += 1
             ordered_dict = OrderedDict()
-            ordered_dict["index"] = cnt3
+            ordered_dict["index"] = cnt2
             ordered_dict["word"] = word_dict["word"]
             ordered_dict["count"] = word_dict["count"]
             ordered_word_dict_list.append(NoIndent(ordered_dict))
 
-            sys.stdout.write("\rStatus: %s / %s"%(cnt3, length3))
+            sys.stdout.write("\rStatus: %s / %s"%(cnt2, length2))
             sys.stdout.flush()
 
-        f3 = open(self.dst3, 'w+')
+        f3 = open(self.dst2, 'w+')
         f3.write( json.dumps( ordered_word_dict_list, indent = 4, cls=NoIndentEncoder))
 
         print "\n" + "-"*70
