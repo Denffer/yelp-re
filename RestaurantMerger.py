@@ -10,11 +10,13 @@ class RestaurantMerger:
         (3) Merge data/sentiment_statistics/restaurant_1~523.json into sentiment_statistics.json  """
 
     def __init__(self):
-        self.src1 = "data/backend_reviews/"
-        self.src2 = "data/restaurant_dict_list/"
-        self.src3 = "data/sentiment_statistics/"
-        self.dst_rdl = "data/coreProcess_input/restaurant_dict_list.json"
-        self.dst_ss = "data/coreProcess_input/sentiment_statistics.json"
+        self.src_rdl = "data/restaurant_dict_list/"
+        self.src_ss = "data/sentiment_statistics/"
+
+        self.dst_w2v_rdl = "data/coreProcess_word2vec/restaurant_dict_list.json"
+        self.dst_w2v_ss = "data/coreProcess_word2vec/sentiment_statistics.json"
+        self.dst_glove_rdl = "data/coreProcess_glove/restaurant_dict_list.json"
+        self.dst_glove_ss = "data/coreProcess_glove/sentiment_statistics.json"
 
         self.switch = 1
 
@@ -24,15 +26,14 @@ class RestaurantMerger:
         src_files = []
         restaurant_dict_list = []
 
-        print '\n' + '-'*70
-        print "Loading data from:", self.src2
+        print "Loading data from:", self.src_rdl
 
         cnt = 0
-        length = len(os.listdir(self.src2))
+        length = len(os.listdir(self.src_rdl))
 
-        for f in os.listdir(self.src2):
+        for f in os.listdir(self.src_rdl):
 
-            file_path = os.path.join(self.src2, f)
+            file_path = os.path.join(self.src_rdl, f)
             if os.path.isfile(file_path):
                 cnt += 1
                 #print "Found:", file_path
@@ -53,14 +54,14 @@ class RestaurantMerger:
         sentiment_statistics = []
 
         print '\n' + '-'*70
-        print "Loading data from:", self.src3
+        print "Loading data from:", self.src_ss
 
         cnt = 0
-        length = len(os.listdir(self.src3))
+        length = len(os.listdir(self.src_ss))
 
-        for f in os.listdir(self.src3):
+        for f in os.listdir(self.src_ss):
 
-            file_path = os.path.join(self.src3, f)
+            file_path = os.path.join(self.src_ss, f)
             if os.path.isfile(file_path):
                 cnt += 1
                 #print "Found:", file_path
@@ -142,10 +143,13 @@ class RestaurantMerger:
 
     def create_dirs(self):
         """ create the directory if not exist"""
-        dir1 = os.path.dirname("data/coreProcess_input/")
+        dir1 = os.path.dirname("data/coreProcess_word2vec/")
+        dir2 = os.path.dirname("data/coreProcess_glove/")
 
         if not os.path.exists(dir1):
             os.makedirs(dir1)
+        if not os.path.exists(dir2):
+            os.makedirs(dir2)
 
     def render(self):
         """ put keys in order and render json file """
@@ -156,7 +160,7 @@ class RestaurantMerger:
         self.create_dirs()
 
         print "\n" + "-"*70
-        print "Writing data to:", self.dst_rdl
+        print "Writing data to:", self.dst_w2v_rdl, "and", self.dst_glove_rdl
 
         cnt1 = 0
         length1 = len(restaurant_dict_list)
@@ -178,11 +182,13 @@ class RestaurantMerger:
             sys.stdout.write("\rStatus: %s / %s"%(cnt1, length1))
             sys.stdout.flush()
 
-        f2 = open(self.dst_rdl, 'w+')
+        f1 = open(self.dst_w2v_rdl, 'w+')
+        f1.write( json.dumps( ordered_restaurant_dict_list, indent = 4, cls=NoIndentEncoder))
+        f2 = open(self.dst_glove_rdl, 'w+')
         f2.write( json.dumps( ordered_restaurant_dict_list, indent = 4, cls=NoIndentEncoder))
 
         print "\n" + "-"*70
-        print "Writing data to:", self.dst_ss
+        print "Writing data to:", self.dst_w2v_ss, "and", self.dst_glove_ss
 
         cnt2 = 0
         length2 = len(sentiment_statistics)
@@ -198,7 +204,9 @@ class RestaurantMerger:
             sys.stdout.write("\rStatus: %s / %s"%(cnt2, length2))
             sys.stdout.flush()
 
-        f3 = open(self.dst2, 'w+')
+        f3 = open(self.dst_w2v_ss, 'w+')
+        f3.write( json.dumps( ordered_word_dict_list, indent = 4, cls=NoIndentEncoder))
+        f3 = open(self.dst_glove_ss, 'w+')
         f3.write( json.dumps( ordered_word_dict_list, indent = 4, cls=NoIndentEncoder))
 
         print "\n" + "-"*70
