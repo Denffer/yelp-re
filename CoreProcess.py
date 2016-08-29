@@ -14,12 +14,12 @@ class CoreProcess:
 
     def __init__(self):
         """ initialize path and lists to be used """
-        self.src_uw = "data/coreProcess_word2vec/unique_words_word2vec_1.txt"
-        self.src_v2 = "data/coreProcess_word2vec/vectors2_word2vec_1.txt"
-        self.src_v200 = "data/coreProcess_word2vec/vectors200_word2vec_1.txt"
+        self.src_uw = "data/coreProcess_word2vec/unique_words_word2vec.txt"
+        self.src_v2 = "data/coreProcess_word2vec/vectors2_word2vec.txt"
+        self.src_v200 = "data/coreProcess_word2vec/vectors200_word2vec.txt"
 
-        self.src_ss = "data/coreProcess_word2vec/sentiment_statistics_1.json"
-        self.src_rdl = "data/coreProcess_word2vec/restaurant_dict_list_1.json"
+        self.src_ss = "data/coreProcess_word2vec/sentiment_statistics.json"
+        self.src_rdl = "data/coreProcess_word2vec/restaurant_dict_list.json"
 
         self.dst_ss = "data/postProcess_word2vec/processed_sentiment_statistics.json"
         self.dst_rdl = "data/postProcess_word2vec/processed_restaurant_dict_list.json"

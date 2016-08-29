@@ -26,7 +26,8 @@ class GlobalVector:
             if os.path.isfile(file_path):
                 #print "Found:", file_path
                 with open(file_path) as f:
-                   source.append(f.read())
+                    source.append(f.read())
+
 
             if self.verbose:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
