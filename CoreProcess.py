@@ -151,6 +151,7 @@ class CoreProcess:
                 dd_cnt += 1
                 dish_dict['avg_score'] = -2
                 dish_dict['min_score'] = -2
+                dish_dict['nearest'] = [{"word": None, "distance": None}]*5
 
                 if dish_dict["v200"] != [0]*200: # Check if empty
                     distance_list = []
@@ -166,7 +167,7 @@ class CoreProcess:
                         euclidean_distance = distance.euclidean(sentiment_word_dict["v200"], dish_dict['v200'])
                         distance_list.append(euclidean_distance)
 
-                        distance_dict = {"word": sentiment_word_dict["word"], "distance": distance}
+                        distance_dict = {"word": sentiment_word_dict["word"], "distance": euclidean_distance}
                         distance_dict_list.append(distance_dict)
 
                         if self.verbose:
@@ -192,11 +193,9 @@ class CoreProcess:
         """ customize output json file """
 
         self.sentiment_words = self.get_sentiment_words()
-        #sentiment_words = self.get_sentiment_words()
         self.restaurant_dict_list = self.get_restaurant_dict_list()
 
         self.put_vectors()
-        #print self.sentiment_words
         self.put_scores()
 
         self.create_dirs()
@@ -204,6 +203,7 @@ class CoreProcess:
         print '\n' + '-'*80
         print "Customizing restaurant_dict_list's json format"
 
+        processed_restaurant_dict_list = []
         rd_cnt = 0
         rdl_length = len(self.restaurant_dict_list)
         for restaurant_dict in self.restaurant_dict_list:
@@ -211,8 +211,15 @@ class CoreProcess:
             dd_cnt = 0 # dish_dict_count
             menu_length = len(restaurant_dict['menu'])
 
-            ordered_dict_list = []
+            rd_ordered_dict = OrderedDict()
+            rd_ordered_dict['index'] = restaurant_dict['index']
+            rd_ordered_dict['restaurant_name'] = restaurant_dict['restaurant_name']
+            rd_ordered_dict['restaurant_id'] = restaurant_dict['restaurant_id']
+            rd_ordered_dict['stars'] = restaurant_dict['stars']
+            rd_ordered_dict['review_count'] = restaurant_dict['review_count']
+            rd_ordered_dict['menu_length'] = restaurant_dict['menu_length']
 
+            ordered_dict_list = []
             for dish_dict in restaurant_dict['menu']:
                 dd_cnt += 1
 
@@ -220,8 +227,18 @@ class CoreProcess:
                 ordered_dict["index"] = dish_dict['index']
                 ordered_dict["name"] = dish_dict['name']
                 ordered_dict["name_ar"] = dish_dict['name_ar']
+                ordered_dict["count"] = dish_dict['count']
                 ordered_dict["avg_score"] = dish_dict['avg_score']
                 ordered_dict["min_score"] = dish_dict['min_score']
+
+                nearest = []
+                for word_dict in dish_dict["nearest"]:
+                    ordered_dict2 = OrderedDict()
+                    ordered_dict2["word"] = word_dict.get('word')
+                    ordered_dict2["distance"] = word_dict.get('distance')
+                    nearest.append(ordered_dict2)
+
+                ordered_dict["nearest"] = NoIndent(nearest)
                 ordered_dict["x"] = dish_dict['x']
                 ordered_dict["y"] = dish_dict['y']
                 ordered_dict["v200"] = NoIndent(dish_dict['v200'])
@@ -232,9 +249,13 @@ class CoreProcess:
                     sys.stdout.flush()
 
             restaurant_dict['menu'] = ordered_dict_list
+            rd_ordered_dict['menu'] = restaurant_dict['menu']
+
+            processed_restaurant_dict_list.append(rd_ordered_dict)
+
 
         f1 = open(self.dst_rdl, "w+")
-        f1.write(json.dumps(self.restaurant_dict_list, indent = 4, cls=NoIndentEncoder))
+        f1.write(json.dumps(processed_restaurant_dict_list, indent = 4, cls=NoIndentEncoder))
         f1.close()
 
         print '\n' + '-'*80
