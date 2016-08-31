@@ -180,7 +180,8 @@ class CoreProcess:
 
                     dish_dict["avg_score"] = avg_score
                     dish_dict["min_score"] = min_score
-                    dish_dict["nearest"] = sorted(distance_dict_list, key=itemgetter('distance'), reverse=True)[:5]
+                    dish_dict["nearest"] = sorted(distance_dict_list, key=itemgetter('distance'))[:5]
+                    #print dish_dict['nearest']
 
     def create_dirs(self):
         """ create the directory if not exist"""
