@@ -4,6 +4,7 @@ from scipy.spatial import distance
 from json import dumps, loads, JSONEncoder, JSONDecoder
 from operator import itemgetter
 from collections import OrderedDict
+from scipy import spatial
 
 class CoreProcess:
     """ This program aim to
@@ -154,6 +155,12 @@ class CoreProcess:
                 dish_dict['nearest'] = [{"word": None, "distance": None}]*5
 
                 if dish_dict["v200"] != [0]*200: # Check if empty
+
+                    """ cosine similarity """
+                    similarity_list = []
+                    similarity_dict_list = []
+
+                    """ euclidean distance """
                     distance_list = []
                     distance_dict_list = []
 
@@ -162,26 +169,35 @@ class CoreProcess:
                     for sentiment_word_dict in self.sentiment_words:
                         sw_cnt += 1
 
-#                        print "length: ",len(sentiment_word_dict["v200"])
-#                        print "length: ",len(dish_dict['v200'])
+                        """ cosine similarity """
+                        cosine_distance = spatial.distance.cosine(sentiment_word_dict["v200"], dish_dict["v200"])
+                        cosine_similarity = 1 - cosine_distance
+                        similarity_list.append(cosine_similarity)
+                        similarity_dict_list.append({"word": sentiment_word_dict["word"], "cosine_similarity": cosine_similarity})
+
+                        """ euclidean distance """
                         euclidean_distance = distance.euclidean(sentiment_word_dict["v200"], dish_dict['v200'])
                         distance_list.append(euclidean_distance)
-
-                        distance_dict = {"word": sentiment_word_dict["word"], "distance": euclidean_distance}
+                        distance_dict = {"word": sentiment_word_dict["word"], "euclidean_distance": euclidean_distance}
                         distance_dict_list.append(distance_dict)
 
                         if self.verbose:
                             sys.stdout.write("\rStatus: %s / %s | %s / %s | %s / %s"%(rd_cnt, rdl_length, dd_cnt, menu_length, sw_cnt, sw_length))
                             sys.stdout.flush()
 
-                    #score = (0.3) * sum(p_dis_list)/len(p_dis_list) + (1-0.3) * min(p_dis_list)/len(p_dis_list)
-                    avg_score = (1) * 1/(sum(distance_list)/len(distance_list))
-                    min_score = (1) * 1/min(distance_list)
+                    """ cosine similarity """
+                    cosine_avg_score = sum(similarity_list)/len(similarity_list)
+                    cosine_max_score = max(similarity_list)
+                    dish_dict["cosine_avg_score"] = cosine_avg_score
+                    dish_dict["cosine_max_score"] = cosine_max_score
+                    dish_dict["cosine_nearest"] = sorted(simiarity_dict_list, key=itemgetter('cosine_similarity'))[:10]
 
-                    dish_dict["avg_score"] = avg_score
-                    dish_dict["min_score"] = min_score
-                    dish_dict["nearest"] = sorted(distance_dict_list, key=itemgetter('distance'))[:5]
-                    #print dish_dict['nearest']
+                    """ euclidean distance """
+                    euclidean_avg_score = 1/(sum(distance_list)/len(distance_list))
+                    euclidean_min_score = 1/min(distance_list)
+                    dish_dict["euclidean_avg_score"] = euclidean_avg_score
+                    dish_dict["euclidean_min_score"] = euclidean_min_score
+                    dish_dict["euclidean_nearest"] = sorted(distance_dict_list, key=itemgetter('euclidean_distance'))[:10]
 
     def create_dirs(self):
         """ create the directory if not exist"""
@@ -229,17 +245,33 @@ class CoreProcess:
                 ordered_dict["name"] = dish_dict['name']
                 ordered_dict["name_ar"] = dish_dict['name_ar']
                 ordered_dict["count"] = dish_dict['count']
-                ordered_dict["avg_score"] = dish_dict['avg_score']
-                ordered_dict["min_score"] = dish_dict['min_score']
 
-                nearest = []
-                for word_dict in dish_dict["nearest"]:
-                    ordered_dict2 = OrderedDict()
-                    ordered_dict2["word"] = word_dict.get('word')
-                    ordered_dict2["distance"] = word_dict.get('distance')
-                    nearest.append(ordered_dict2)
+                """ cosine """
+                ordered_dict["cosine_avg_score"] = dish_dict['cosine_avg_score']
+                ordered_dict["cosine_max_score"] = dish_dict['cosine_max_score']
 
-                ordered_dict["nearest"] = NoIndent(nearest)
+                cosine_nearest = []
+                for word_dict in dish_dict["cosine_nearest"]:
+                    ordered_dict = OrderedDict()
+                    ordered_dict["word"] = word_dict.get('word')
+                    ordered_dict["cosine_similarity"] = word_dict.get('cosine_similarity')
+                    cosine_nearest.append(ordered_dict)
+
+                ordered_dict["cosine_nearest"] = NoIndent(euclidean_nearest)
+
+                """ euclidean """
+                ordered_dict["euclidean_avg_score"] = dish_dict['euclidean_avg_score']
+                ordered_dict["euclidean_min_score"] = dish_dict['euclidean_min_score']
+
+                euclidean_nearest = []
+                for word_dict in dish_dict["euclidean_nearest"]:
+                    ordered_dict = OrderedDict()
+                    ordered_dict["word"] = word_dict.get('word')
+                    ordered_dict["euclidean_distance"] = word_dict.get('euclidean_distance')
+                    euclidean_nearest.append(ordered_dict)
+
+                ordered_dict["euclidean_nearest"] = NoIndent(euclidean_nearest)
+
                 ordered_dict["x"] = dish_dict['x']
                 ordered_dict["y"] = dish_dict['y']
                 ordered_dict["v200"] = NoIndent(dish_dict['v200'])
