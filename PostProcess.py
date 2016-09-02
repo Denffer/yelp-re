@@ -181,16 +181,19 @@ class PostProcess:
                 sys.stdout.flush()
 
         self.restaurant_dict_list = restaurant_ordered_dict_list
+        print self.restaurant_dict_list[1]['top5_euclidean_avg']
 
     def get_reindex(self, input_dict_list):
         """ re-index sorted ordered_dict_list """
 
         cnt = 0
+        processed_dict_list = []
         for word_dict in input_dict_list:
             cnt += 1
             word_dict["index"] = cnt
+            processed_dict_list.append(word_dict)
 
-        return input_dict_list
+        return processed_dict_list
 
     def get_customized_sentiment_statistics(self):
 
@@ -206,7 +209,7 @@ class PostProcess:
             sw_cnt += 1
 
             ordered_word_dict = OrderedDict()
-            ordered_word_dict['index'] = word_dict['index']
+            ordered_word_dict['index'] = sw_cnt
             ordered_word_dict['word'] = word_dict['word']
             ordered_word_dict['count'] = word_dict['count']
             ordered_word_dict['x'] = word_dict['x']
