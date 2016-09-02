@@ -20,7 +20,8 @@ class ReviewParser:
 
         self.backend_reviews = []
         self.frontend_reviews = []
-        #self.menu = []
+        self.clean_reviews = []
+
         self.switch = 0
 
     def get_review_dict(self):
@@ -103,9 +104,9 @@ class ReviewParser:
         restaurant_name = self.get_business()['business_name']
 
         for i in xrange(len(dishes_ar)):
-            dishes_ar[i] = dishes_ar[i] + "_" + restaurant_name
+            dishes_ar[i] = " " + dishes_ar[i].replace(" ", "-") + "_" + restaurant_name.replace(" ", "-") + " "
             dishes_ar[i] = re.sub("(\s)+", r" ", dishes_ar[i])
-            dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace(" ", "-").replace("\'", "").replace(".", "").replace(",","")
+            dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace("\'", "").replace(".", "").replace(",","")
 
         #print dishes_ar
         return dishes_ar
@@ -126,7 +127,7 @@ class ReviewParser:
             cnt += 1
             #dish = re.sub("(!|@|#|\$|%|\^|\&|\*\:|\;|\.|\,|\"|\')", r'', dish)
             dish = dish.lower().replace("&","and").replace("'","").replace(" ","-")
-            marked_dishes.append("<mark>" + dish + "</mark>")
+            marked_dishes.append(" <mark>" + dish + "</mark> ")
 
             if self.switch:
                 sys.stdout.write("\rStatus: %s / %s"%(cnt, length))
@@ -135,34 +136,7 @@ class ReviewParser:
         #print marked_dishes
         return marked_dishes
 
-    def get_frontend_reviews(self):
-
-        frontend_reviews = self.get_review_dict()["reviews"]
-        dishes_regex = self.get_dishes_regex()
-        marked_dishes = self.get_marked_dishes()
-
-        if self.switch:
-            print "\n" + "-"*70
-            print "Processing frontend reviews"
-
-        length1 = len(frontend_reviews)
-        for i in xrange(len(frontend_reviews)):
-            frontend_reviews[i] = re.sub("\\n+", r" ", frontend_reviews[i])
-            length2 = len(marked_dishes)
-
-            for j in xrange(len(marked_dishes)):
-                """ Replacing | E.g. I love country pate. -> I love <mark>housemade country pate</mark>. """
-                frontend_reviews[i] = re.sub(dishes_regex[j], marked_dishes[j], frontend_reviews[i], flags = re.IGNORECASE)
-
-                if self.switch:
-                    sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
-                    sys.stdout.flush()
-
-            frontend_reviews[i] = frontend_reviews[i].replace("-"," ")
-
-        return frontend_reviews
-
-    def get_cleaned_reviews(self):
+    def get_clean_reviews(self):
         """ clean reviews """
         raw_reviews = self.get_review_dict()["reviews"]
 
@@ -176,14 +150,14 @@ class ReviewParser:
             cnt += 1
             #text = text.decode("utf-8").encode('ascii', 'ignore')
 
-            text = text.lower()
             text = re.sub(r'https?:\/\/.*[\r\n]*', ' ', text, flags=re.MULTILINE)
             #text = ' '.join(re.findall('[A-Z][^A-Z]*', text)) # ThisIsAwesome -> This Is Awesome
             text = text.replace("!"," ! ").replace("@"," @ ").replace("#"," # ").replace("$"," $ ").replace("%"," % ")
             text = text.replace("^"," ^ ").replace("&"," & ").replace("*"," * ").replace("("," ( ").replace(")"," ) ")
             text = text.replace(":"," : ").replace(";"," ; ").replace("."," . ").replace(","," , ").replace("=", " = ")
             text = text.replace("+"," + ").replace("-"," - ").replace("|"," | ").replace("\\"," \ ").replace("/"," / ")
-            text = text.replace("\""," ").replace("?", " ? ").replace("["," ").replace("]"," ").replace("{", " { ").replace("}", " } ")
+            text = text.replace("~"," ~ ").replace("_", "").replace(">"," > ").replace("<", " < ").replace("?", " ? ")
+            text = text.replace("\""," ").replace("[","").replace("]","").replace("{","").replace("}","")
 
             #text = re.sub("(!|@|#|\$|%|\^|\&|\*|\(|\)|\:|\;|\.|\,|\?|\")", r' \1 ', text)
 
@@ -215,10 +189,58 @@ class ReviewParser:
 
         return clean_reviews
 
+    def get_frontend_review_dict_list(self):
+
+        frontend_reviews = list(self.clean_reviews)
+        dishes = self.get_clean_menu()
+        dishes_regex = self.get_dishes_regex()
+        marked_dishes = self.get_marked_dishes()
+
+        if self.switch:
+            print "\n" + "-"*70
+            print "Processing frontend reviews"
+
+        frontend_review_dict_list = []
+        length1 = len(marked_dishes)
+        for i in xrange(len(marked_dishes)):
+            length2 = len(frontend_reviews)
+            for j in xrange(len(frontend_reviews)):
+                frontend_reviews[j] = frontend_reviews[j]
+                frontend_reviews[j] = re.sub("\\n+", r" ", frontend_reviews[j])
+
+                """ Replacing | E.g. I love country pate. -> I love <mark>housemade country pate</mark>. """
+                frontend_reviews[j] = re.sub(dishes_regex[i], marked_dishes[i], frontend_reviews[j], flags = re.IGNORECASE)
+
+                if self.switch:
+                    sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
+                    sys.stdout.flush()
+
+            reviews = []
+            for k in xrange(len(frontend_reviews)):
+                if marked_dishes[i] in frontend_reviews[k]:
+                    frontend_reviews[k] = frontend_reviews[k].replace("-"," ")
+
+                    frontend_reviews[k] = frontend_reviews[k].replace(" ! ","! ").replace(" @ ","@ ").replace(" # ","# ").replace(" $ ","$ ").replace(" % ","% ")
+                    frontend_reviews[k] = frontend_reviews[k].replace(" ^ ","^ ").replace(" & ","& ").replace(" * ","* ").replace(" ( ","( ").replace(" ) ",") ")
+                    frontend_reviews[k] = frontend_reviews[k].replace(" : ",": ").replace(" ; ","; ").replace(" . ",". ").replace(" , ",", ").replace(" = ", "= ")
+                    frontend_reviews[k] = frontend_reviews[k].replace(" + ","+ ").replace(" - ","- ").replace(" | ","| ")
+                    frontend_reviews[k] = frontend_reviews[k].replace(" ~ ","~ ").replace(" > ","> ").replace(" < ", "< ").replace(" ? ", "? ")
+                    frontend_reviews[k] = re.sub("(\s)+", r" ", frontend_reviews[k])
+
+                    reviews.append(frontend_reviews[k])
+
+                if self.switch:
+                    sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, k+1, length2))
+                    sys.stdout.flush()
+
+            frontend_review_dict_list.append({"dish_name": dishes[i], "reviews": reviews})
+
+        return frontend_review_dict_list
+
     def get_backend_reviews(self):
         """ match the dishes in the reviews with dishes_regex and replace them with the dishes in dishes_ar  """
 
-        backend_reviews = self.get_cleaned_reviews()
+        backend_reviews = list(self.clean_reviews)
         dishes_regex = self.get_dishes_regex()
         dishes_ar = self.get_dishes_ar()
 
@@ -230,8 +252,10 @@ class ReviewParser:
         for i in xrange(len(backend_reviews)):
             length2 = len(dishes_regex)
             for j in xrange(len(dishes_regex)):
+                backend_reviews[i] = backend_reviews[i].lower()
                 """ Replacement | E.g. I love country pate. -> I love housemade-country-pate_mon-ami-gabi. """
                 backend_reviews[i] = re.sub(dishes_regex[j], dishes_ar[j], backend_reviews[i], flags = re.IGNORECASE)
+                backend_reviews[i] = re.sub("(\s)+", r" ", backend_reviews[i])
 
                 if self.switch:
                     sys.stdout.write("\rStatus: %s / %s | %s / %s"%(i+1, length1, j+1, length2))
@@ -345,8 +369,10 @@ class ReviewParser:
         """ render frontend_review & backend_reviews & restaurant_list """
         business = self.get_business()
         #self.menu = self.get_clean_menu()
+        self.clean_reviews = self.get_clean_reviews()
+        self.frontend_review_dict_list = self.get_frontend_review_dict_list()
         self.backend_reviews = self.get_backend_reviews()
-        self.frontend_reviews = self.get_frontend_reviews()
+
         restaurant_dict = self.get_restaurant_dict()
         sentiment_statistics = self.get_statistics()
 
@@ -362,15 +388,26 @@ class ReviewParser:
             if sys.argv[1][26] != ".":
                 filename = filename + sys.argv[1][26]
 
-        review_count = len(self.frontend_reviews)
+        total_review_count = len(self.clean_reviews)
         """ (1) render restaurant_*.json in ./frontend_reviews """
 
         orderedDict1 = OrderedDict()
         orderedDict1["restaurant_name"] = business["business_name"]
         orderedDict1["restaurant_id"] = business["business_id"]
         orderedDict1["stars"] = business["stars"]
-        orderedDict1["review_count"] = review_count
-        orderedDict1["reviews"] = self.frontend_reviews
+        orderedDict1["total_review_count"] = total_review_count
+
+        ordered_frontend_review_dict_list = []
+        dish_cnt = 0
+        for review_dict in self.frontend_review_dict_list:
+            dish_cnt += 1
+            tmp_ordered_dict = OrderedDict()
+            tmp_ordered_dict['dish_index'] = dish_cnt
+            tmp_ordered_dict['dish_name'] = review_dict["dish_name"]
+            tmp_ordered_dict['reviews'] = review_dict["reviews"]
+            ordered_frontend_review_dict_list.append(tmp_ordered_dict)
+
+        orderedDict1["dish_reviews"] = ordered_frontend_review_dict_list
 
         frontend_json = open("data/frontend_reviews/restaurant_%s.json"%(filename), "w+")
         frontend_json.write(json.dumps( orderedDict1, indent = 4))
@@ -392,7 +429,7 @@ class ReviewParser:
         orderedDict2["restaurant_name"] = restaurant_dict["business_name"]
         orderedDict2["restaurant_id"] = restaurant_dict["business_id"]
         orderedDict2["stars"] = restaurant_dict["stars"]
-        orderedDict2["review_count"] = review_count
+        orderedDict2["review_count"] = total_review_count
         orderedDict2["menu_length"] = restaurant_dict["menu_length"]
         orderedDict2["menu"] = restaurant_dict["menu"]
 
