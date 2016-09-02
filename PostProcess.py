@@ -42,8 +42,9 @@ class PostProcess:
 
         self.restaurant_dict_list = source
 
-    def remove_vectors200(self):
+    def remove_v200(self):
         """ remove vectors200 in (1) sentiment_statistics (2) restaurant_dict_list """
+        """ put keys in order"""
 
         print "-"*80
         print "Removing vectors200 into sentiment_words"
@@ -86,13 +87,137 @@ class PostProcess:
 
             restaurant_dict['menu'] = menu
 
-            restaurant_dict["top5_avg"] = sorted(restaurant_dict['menu'], key=itemgetter('avg_score'), reverse=True)[:5]
-            restaurant_dict["top5_min"] = sorted(restaurant_dict['menu'], key=itemgetter('min_score'), reverse=True)[:5]
+            if self.verbose:
+                sys.stdout.write("\rStatus: %s / %s"%(rd_cnt, rdl_length))
+                sys.stdout.flush()
+
+    def get_customized_restaurant_dict_list(self):
+        """ customize output json file """
+
+        print '\n' + '-'*80
+        print "Customizing restaurant_dict_list's json format"
+
+        restaurant_ordered_dict_list = []
+        rd_cnt = 0
+        rdl_length = len(self.restaurant_dict_list)
+        for restaurant_dict in self.restaurant_dict_list:
+
+            rd_cnt += 1
+
+            restaurant_ordered_dict = OrderedDict()
+            restaurant_ordered_dict['index'] = restaurant_dict['index']
+            restaurant_ordered_dict['restaurant_name'] = restaurant_dict['restaurant_name']
+            restaurant_ordered_dict['restaurant_id'] = restaurant_dict['restaurant_id']
+            restaurant_ordered_dict['stars'] = restaurant_dict['stars']
+            restaurant_ordered_dict['review_count'] = restaurant_dict['review_count']
+
+            dish_dict_cnt = 0
+            ordered_menu = []
+            for dish_dict in restaurant_dict['menu']:
+                dish_dict_cnt += 1
+
+                ordered_dish_dict = OrderedDict()
+
+                ordered_dish_dict = OrderedDict()
+                ordered_dish_dict["index"] = dish_dict_cnt
+                ordered_dish_dict["name"] = dish_dict['name']
+                ordered_dish_dict["name_ar"] = dish_dict['name_ar']
+                ordered_dish_dict["count"] = dish_dict['count']
+
+                """ cosine """
+                ordered_dish_dict["cosine_avg_score"] = dish_dict['cosine_avg_score']
+                ordered_dish_dict["cosine_max_score"] = dish_dict['cosine_max_score']
+
+                cosine_nearest = []
+                for word_dict in dish_dict["cosine_nearest"]:
+                    ordered_word_dict = OrderedDict()
+                    ordered_word_dict["word"] = word_dict.get('word')
+                    ordered_word_dict["cosine_similarity"] = word_dict.get('cosine_similarity')
+                    cosine_nearest.append(ordered_word_dict)
+
+                ordered_dish_dict["cosine_nearest"] = NoIndent(cosine_nearest)
+                """ cosine """
+
+                """ euclidean """
+                ordered_dish_dict["euclidean_avg_score"] = dish_dict['euclidean_avg_score']
+                ordered_dish_dict["euclidean_min_score"] = dish_dict['euclidean_min_score']
+
+                euclidean_nearest = []
+                for word_dict in dish_dict["euclidean_nearest"]:
+                    ordered_word_dict2 = OrderedDict()
+                    ordered_word_dict2["word"] = word_dict.get('word')
+                    ordered_word_dict2["euclidean_distance"] = word_dict.get('euclidean_distance')
+                    euclidean_nearest.append(ordered_word_dict2)
+
+                ordered_dish_dict["euclidean_nearest"] = NoIndent(euclidean_nearest)
+                """ euclidean """
+
+                ordered_dish_dict["x"] = dish_dict['x']
+                ordered_dish_dict["y"] = dish_dict['y']
+                ordered_menu.append(ordered_dish_dict)
+
+            #restaurant_ordered_dict['menu'] = ordered_menu
+
+            """ (1) top5_frequent (2) top5_cosine_avg (3) top5_cosine_max (4) top5_euclidean_avg (5) top5_euclidean_min """
+            restaurant_ordered_dict["top5_frequent"] = sorted(ordered_menu, key=itemgetter('count'), reverse=True)[:5]
+            restaurant_ordered_dict["top5_frequent"] = self.get_reindex(restaurant_ordered_dict["top5_frequent"])
+
+            restaurant_ordered_dict["top5_cosine_avg"] = sorted(ordered_menu, key=itemgetter('cosine_avg_score'), reverse=True)[:5]
+            restaurant_ordered_dict["top5_cosine_avg"] = self.get_reindex(restaurant_ordered_dict["top5_cosine_avg"])
+
+            restaurant_ordered_dict["top5_cosine_max"] = sorted(ordered_menu, key=itemgetter('cosine_max_score'), reverse=True)[:5]
+            restaurant_ordered_dict["top5_cosine_max"] = self.get_reindex(restaurant_ordered_dict["top5_cosine_max"])
+
+            restaurant_ordered_dict["top5_euclidean_avg"] = sorted(ordered_menu, key=itemgetter('euclidean_avg_score'), reverse=True)[:5]
+            restaurant_ordered_dict["top5_euclidean_avg"] = self.get_reindex(restaurant_ordered_dict["top5_euclidean_avg"])
+
+            restaurant_ordered_dict["top5_euclidean_min"] = sorted(ordered_menu, key=itemgetter('euclidean_min_score'), reverse=True)[:5]
+            restaurant_ordered_dict["top5_euclidean_min"] = self.get_reindex(restaurant_ordered_dict["top5_euclidean_min"])
+
+            restaurant_ordered_dict_list.append(restaurant_ordered_dict)
 
             if self.verbose:
                 sys.stdout.write("\rStatus: %s / %s"%(rd_cnt, rdl_length))
                 sys.stdout.flush()
 
+        self.restaurant_dict_list = restaurant_ordered_dict_list
+
+    def get_reindex(self, input_dict_list):
+        """ re-index sorted ordered_dict_list """
+
+        cnt = 0
+        for word_dict in input_dict_list:
+            cnt += 1
+            word_dict["index"] = cnt
+
+        return input_dict_list
+
+    def get_customized_sentiment_statistics(self):
+
+        print '\n' + '-'*80
+        print "Customizing sentiment_statistics's json format"
+
+        sw_cnt = 0
+        sw_length = len(self.sentiment_statistics)
+
+        ordered_word_dict_list = []
+
+        for word_dict in self.sentiment_statistics:
+            sw_cnt += 1
+
+            ordered_word_dict = OrderedDict()
+            ordered_word_dict['index'] = word_dict['index']
+            ordered_word_dict['word'] = word_dict['word']
+            ordered_word_dict['count'] = word_dict['count']
+            ordered_word_dict['x'] = word_dict['x']
+            ordered_word_dict['y'] = word_dict['y']
+            ordered_word_dict_list.append(ordered_word_dict)
+
+            if self.verbose:
+                sys.stdout.write("\rStatus: %s / %s"%(sw_cnt, sw_length))
+                sys.stdout.flush()
+
+        self.sentiment_words = ordered_word_dict_list
 
     def create_dirs(self):
         """ create the directory if not exist"""
@@ -102,129 +227,19 @@ class PostProcess:
             os.makedirs(dir1)
 
     def render(self):
-        """ customize output json file """
 
         self.get_sentiment_statistics()
         self.get_restaurant_dict_list()
-        self.remove_vectors200()
+
+        self.remove_v200()
+        self.get_customized_restaurant_dict_list()
+        self.get_customized_sentiment_statistics()
 
         self.create_dirs()
 
-        print '\n' + '-'*80
-        print "Customizing frontend_restaurant_dict_list's json format"
-
-        frontend_restaurant_dict_list = []
-        rd_cnt = 0
-        rdl_length = len(self.restaurant_dict_list)
-        for restaurant_dict in self.restaurant_dict_list:
-
-            rd_cnt += 1
-
-            rd_ordered_dict = OrderedDict()
-            rd_ordered_dict['index'] = restaurant_dict['index']
-            rd_ordered_dict['restaurant_name'] = restaurant_dict['restaurant_name']
-            rd_ordered_dict['restaurant_id'] = restaurant_dict['restaurant_id']
-            rd_ordered_dict['stars'] = restaurant_dict['stars']
-            rd_ordered_dict['review_count'] = restaurant_dict['review_count']
-
-            dd_cnt1 = 0 # dish_dict_count
-            ordered_dict_list1 = []
-            for dish_dict in restaurant_dict['top5_avg']:
-
-                dd_cnt1 += 1
-
-                ordered_dict = OrderedDict()
-                ordered_dict["index"] = dd_cnt1
-                ordered_dict["name"] = dish_dict['name']
-                ordered_dict["name_ar"] = dish_dict['name_ar']
-                ordered_dict["count"] = dish_dict['count']
-                ordered_dict["avg_score"] = dish_dict['avg_score']
-                ordered_dict["min_score"] = dish_dict['min_score']
-
-
-                nearest = []
-                for word_dict in dish_dict["nearest"]:
-                    ordered_dict2 = OrderedDict()
-                    ordered_dict2["word"] = word_dict.get('word')
-                    ordered_dict2["distance"] = word_dict.get('distance')
-                    nearest.append(ordered_dict2)
-
-                ordered_dict["nearest"] = NoIndent(nearest)
-                ordered_dict["x"] = dish_dict['x']
-                ordered_dict["y"] = dish_dict['y']
-                ordered_dict_list1.append(ordered_dict)
-
-            restaurant_dict['top5_avg'] = ordered_dict_list1
-
-            ##
-
-            dd_cnt2 = 0 # dish_dict_count
-            ordered_dict_list2 = []
-            for dish_dict in restaurant_dict['top5_min']:
-
-                dd_cnt2 += 1
-
-                ordered_dict = OrderedDict()
-                ordered_dict["index"] = dd_cnt2
-                ordered_dict["name"] = dish_dict['name']
-                ordered_dict["name_ar"] = dish_dict['name_ar']
-                ordered_dict["count"] = dish_dict['count']
-                ordered_dict["avg_score"] = dish_dict['avg_score']
-                ordered_dict["min_score"] = dish_dict['min_score']
-
-                nearest = []
-                for word_dict in dish_dict["nearest"]:
-                    ordered_dict2 = OrderedDict()
-                    ordered_dict2["word"] = word_dict.get('word')
-                    ordered_dict2["distance"] = word_dict.get('distance')
-                    nearest.append(ordered_dict2)
-
-                ordered_dict["nearest"] = NoIndent(nearest)
-                ordered_dict["x"] = dish_dict['x']
-                ordered_dict["y"] = dish_dict['y']
-                ordered_dict_list2.append(ordered_dict)
-
-            restaurant_dict['top5_min'] = ordered_dict_list2
-
-
-            if self.verbose:
-                sys.stdout.write("\rStatus: %s / %s"%(rd_cnt, rdl_length))
-                sys.stdout.flush()
-
-            rd_ordered_dict['top5_avg'] = restaurant_dict['top5_avg']
-            rd_ordered_dict['top5_min'] = restaurant_dict['top5_min']
-
-            frontend_restaurant_dict_list.append(rd_ordered_dict)
-
-
         f1 = open(self.dst_rdl, "w+")
-        f1.write(json.dumps(frontend_restaurant_dict_list, indent = 4, cls=NoIndentEncoder))
+        f1.write(json.dumps(self.restaurant_dict_list, indent = 4, cls=NoIndentEncoder))
         f1.close()
-
-        print '\n' + '-'*80
-        print "Customizing frontend_sentiment_statistics's json format"
-
-        sw_cnt = 0
-        sw_length = len(self.sentiment_statistics)
-
-        ordered_dict_list3 = []
-
-        for word_dict in self.sentiment_statistics:
-            sw_cnt += 1
-
-            ordered_dict = OrderedDict()
-            ordered_dict['index'] = word_dict['index']
-            ordered_dict['word'] = word_dict['word']
-            ordered_dict['count'] = word_dict['count']
-            ordered_dict['x'] = word_dict['x']
-            ordered_dict['y'] = word_dict['y']
-            ordered_dict_list3.append(ordered_dict)
-
-            if self.verbose:
-                sys.stdout.write("\rStatus: %s / %s"%(sw_cnt, sw_length))
-                sys.stdout.flush()
-
-        self.sentiment_words = ordered_dict_list1
 
         f2 = open(self.dst_ss, "w+")
         f2.write(json.dumps(self.sentiment_statistics, indent = 4, cls=NoIndentEncoder))
