@@ -181,7 +181,7 @@ class PostProcess:
                 sys.stdout.flush()
 
         self.restaurant_dict_list = restaurant_ordered_dict_list
-        print self.restaurant_dict_list[1]['top5_euclidean_avg']
+        #print self.restaurant_dict_list[1]['top5_euclidean_avg']
 
     def get_reindex(self, input_dict_list):
         """ re-index sorted ordered_dict_list """
