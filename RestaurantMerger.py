@@ -33,9 +33,11 @@ class RestaurantMerger:
 
         for f in os.listdir(self.src_rdl):
 
-            file_path = os.path.join(self.src_rdl, f)
+            cnt += 1
+            file_path = os.path.join(self.src_rdl, "restaurant_dict_")
+            file_path = file_path + str(cnt) + ".json"
+
             if os.path.isfile(file_path):
-                cnt += 1
                 #print "Found:", file_path
                 with open(file_path) as file:
                     restaurant_dict_list.append(json.load(file))
