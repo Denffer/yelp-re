@@ -104,11 +104,11 @@ class ReviewParser:
         restaurant_name = self.get_business()['business_name']
 
         for i in xrange(len(dishes_ar)):
-            dishes_ar[i] = " " + dishes_ar[i].replace(" ", "-") + "_" + restaurant_name.replace(" ", "-") + " "
+            dishes_ar[i] = dishes_ar[i].replace(" ", "-") + "_" + restaurant_name.replace(" ", "-")
             dishes_ar[i] = re.sub("(\s)+", r" ", dishes_ar[i])
             dishes_ar[i] = dishes_ar[i].lower().replace("&", "and").replace("\'", "").replace(".", "").replace(",","")
 
-        #print dishes_ar
+        print dishes_ar
         return dishes_ar
 
     def get_marked_dishes(self):
